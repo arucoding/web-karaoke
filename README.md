@@ -1,6 +1,6 @@
 # Web Karaoke
 
-Web karaoke pribadi — cari & putar video karaoke dari YouTube. Dibangun sebagai satu file HTML statis (`index.html`), tanpa build step.
+Web karaoke pribadi — cari & putar video karaoke dari YouTube. Dibangun sebagai satu file HTML statis (`index.html`), tanpa build step. Auto-deploy ke Vercel setiap push ke `main`.
 
 ## Arsitektur
 
