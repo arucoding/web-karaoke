@@ -649,6 +649,11 @@ function playNext(fromEnded){
       playVideo(currentRec(), -1);
       return;
     }
+    if(fromEnded && autoplayOn && current && !recSettled){
+      // Rekomendasi masih dimuat — tunggu maksimal 15 detik sejak lagu selesai
+      startAutoplayWait();
+      return;
+    }
     if(fromEnded) showNotice("Antrean habis. Cari lagu berikutnya yuk.", "ok");
     return;
   }
@@ -657,7 +662,9 @@ function playNext(fromEnded){
     if(fromEnded){
       // Antrean selesai: lanjut ke rekomendasi kalau putar otomatis nyala
       if(autoplayOn && currentRec()){ playVideo(currentRec(), -1); return; }
-      showNotice("Antrean selesai — semua lagu sudah diputar.", "ok");
+      if(autoplayOn && current && !recSettled){ startAutoplayWait(); return; }
+      if(autoplayOn) showNotice("Antrean habis. Cari lagu berikutnya yuk.", "ok");
+      else showNotice("Antrean selesai — semua lagu sudah diputar.", "ok");
       return;
     }
     next = 0;
@@ -724,7 +731,11 @@ function updateQueueStatus(){
     var sb = $("status-skip");
     if(sb) sb.addEventListener("click", skipRecommendation);
   } else if(autoplayOn && current){
-    el.textContent = "Berikutnya otomatis: menyiapkan rekomendasi…";
+    if(recUnavailable){
+      el.textContent = "Tidak ada rekomendasi yang tersedia.";
+    } else {
+      el.textContent = "Berikutnya otomatis: menyiapkan rekomendasi…";
+    }
   } else {
     el.textContent = "Antrean kosong.";
   }
@@ -749,6 +760,14 @@ function updateAutoNextRow(){
 var recList = [];   // rekomendasi untuk video yang sedang diputar
 var recIndex = 0;
 var recForId = null;
+var recLoading = false;
+var recSettled = false;     // true setelah rantai sumber selesai (ada hasil atau kosong/gagal semua)
+var recUnavailable = false; // settled dan tidak ada rekomendasi sama sekali
+var recGeneration = 0;
+var waitingForRecAfterEnd = false;
+var autoplayWaitTimer = null;
+var GAS_RELATED_TIMEOUT = 10000;
+var REC_WAIT_AFTER_END_MS = 15000;
 
 function currentRec(){
   if(!recList.length) return null;
@@ -760,18 +779,52 @@ function skipRecommendation(){
   updateQueueStatus();
   renderAll();
 }
-
-/* Ambil video terkait dari Invidious (field recommendedVideos) di latar
-   belakang selagi lagu diputar. Kalau gagal/kosong, cadangan acak dari
-   Favorit lalu Riwayat. */
-function fetchRecommendations(id){
-  if(!id) return;
-  recList = []; recIndex = 0; recForId = id;
+function clearAutoplayWait(){
+  if(autoplayWaitTimer){ clearTimeout(autoplayWaitTimer); autoplayWaitTimer = null; }
+}
+/* Batas keras supaya status tidak nyangkut: kalau 15 detik sejak lagu
+   selesai belum ada rekomendasi, anggap tidak ada — berhenti seperti
+   antrean habis biasa dan abaikan hasil yang datang terlambat. */
+function startAutoplayWait(){
+  clearAutoplayWait();
+  waitingForRecAfterEnd = true;
   updateQueueStatus();
-  tryInstances("/api/v1/videos/" + encodeURIComponent(id), SEARCH_TIMEOUT,
+  autoplayWaitTimer = setTimeout(function(){
+    autoplayWaitTimer = null;
+    if(!waitingForRecAfterEnd) return;
+    waitingForRecAfterEnd = false;
+    if(currentRec()){ playVideo(currentRec(), -1); return; }
+    recGeneration++;
+    recLoading = false; recSettled = true; recUnavailable = true; recList = []; recIndex = 0;
+    updateQueueStatus();
+    renderAll();
+    showNotice("Antrean habis. Cari lagu berikutnya yuk.", "ok");
+  }, REC_WAIT_AFTER_END_MS);
+}
+function shuffled(arr){
+  var a = arr.slice();
+  for(var i = a.length - 1; i > 0; i--){
+    var j = Math.floor(Math.random() * (i + 1));
+    var tmp = a[i]; a[i] = a[j]; a[j] = tmp;
+  }
+  return a;
+}
+/* Sumber 1 (utama): rekomendasi via backend GAS — mapping sama persis
+   seperti hasil search GAS ({id,title,channel,duration,thumb}). */
+function relatedGAS(id){
+  return fetchWithTimeout(GAS_BASE + "?action=related&videoId=" + encodeURIComponent(id), GAS_RELATED_TIMEOUT)
+    .then(function(d){
+      if(!d || d.ok !== true || !Array.isArray(d.results)) throw new Error("GAS related failed");
+      return d.results.filter(function(v){ return v && v.id && v.id !== id; }).map(function(v){
+        return { videoId: v.id, title: v.title || "Tanpa judul", author: v.channel || "", lengthSeconds: parseDurationStr(v.duration), thumb: v.thumb || "" };
+      });
+    });
+}
+/* Sumber 2: video terkait dari Invidious (field recommendedVideos). */
+function relatedInvidious(id){
+  return tryInstances("/api/v1/videos/" + encodeURIComponent(id), SEARCH_TIMEOUT,
     function(d){ return !!(d && Array.isArray(d.recommendedVideos)); }, null)
     .then(function(d){
-      if(recForId !== id) return;
       var list = [];
       (d.recommendedVideos || []).forEach(function(v){
         if(!v || !v.videoId || v.videoId === id) return;
@@ -782,36 +835,87 @@ function fetchRecommendations(id){
         }
         list.push({ videoId: v.videoId, title: v.title || "Tanpa judul", author: v.author || "", lengthSeconds: v.lengthSeconds || 0, thumb: t });
       });
-      if(list.length){ recList = list; recIndex = 0; }
-      else buildFallbackRecs(id);
-      updateQueueStatus();
-      renderAll();
-    })
-    .catch(function(){
-      if(recForId !== id) return;
-      buildFallbackRecs(id);
-      updateQueueStatus();
-      renderAll();
+      return list;
     });
 }
-function shuffled(arr){
-  var a = arr.slice();
-  for(var i = a.length - 1; i > 0; i--){
-    var j = Math.floor(Math.random() * (i + 1));
-    var tmp = a[i]; a[i] = a[j]; a[j] = tmp;
+/* Sumber 3 lalu 4: Favorit acak, kalau kosong baru Riwayat acak —
+   keduanya mengecualikan lagu yang sedang diputar. */
+function fallbackRecList(excludeId){
+  function toPool(arr){
+    var seen = {};
+    var pool = [];
+    shuffled(arr).forEach(function(v){
+      if(!v || !v.videoId || v.videoId === excludeId || seen[v.videoId]) return;
+      seen[v.videoId] = true;
+      pool.push({ videoId: v.videoId, title: v.title || "Tanpa judul", author: v.author || "", lengthSeconds: v.lengthSeconds || 0, thumb: v.thumb || "" });
+    });
+    return pool;
   }
-  return a;
+  var favPool = toPool(favorites);
+  if(favPool.length) return favPool;
+  return toPool(historyList);
 }
 function buildFallbackRecs(excludeId){
-  var seen = {};
-  var pool = [];
-  shuffled(favorites).concat(shuffled(historyList)).forEach(function(v){
-    if(!v || !v.videoId || v.videoId === excludeId || seen[v.videoId]) return;
-    seen[v.videoId] = true;
-    pool.push({ videoId: v.videoId, title: v.title || "Tanpa judul", author: v.author || "", lengthSeconds: v.lengthSeconds || 0, thumb: v.thumb || "" });
-  });
-  recList = pool;
+  recList = fallbackRecList(excludeId);
   recIndex = 0;
+}
+
+/* Urutan sumber: GAS related → Invidious → Favorit acak → Riwayat acak.
+   Diambil di latar belakang selagi lagu diputar supaya siap saat lagu
+   selesai. Rantai selalu berakhir di salah satu dari dua keadaan pasti:
+   recList terisi, atau recUnavailable = true (status jadi "Tidak ada
+   rekomendasi yang tersedia.") — tidak ada keadaan menggantung. */
+function fetchRecommendations(id){
+  if(!id) return;
+  clearAutoplayWait();
+  waitingForRecAfterEnd = false;
+  var gen = ++recGeneration;
+  recList = []; recIndex = 0; recForId = id;
+  recLoading = true; recSettled = false; recUnavailable = false;
+  updateQueueStatus();
+  var chain = relatedGAS(id).then(function(list){
+    if(!list || !list.length) throw new Error("gas related empty");
+    return list;
+  }).catch(function(err){
+    if(gen !== recGeneration || recForId !== id) throw err;
+    return relatedInvidious(id).then(function(list){
+      if(!list || !list.length) throw new Error("invidious related empty");
+      return list;
+    });
+  }).catch(function(err){
+    if(gen !== recGeneration || recForId !== id) throw err;
+    var pool = fallbackRecList(id);
+    if(!pool.length) throw new Error("fallback empty");
+    return pool;
+  });
+  chain.then(function(list){
+    if(gen !== recGeneration || recForId !== id) return;
+    recList = list; recIndex = 0;
+    recLoading = false; recSettled = true; recUnavailable = false;
+    if(waitingForRecAfterEnd){
+      clearAutoplayWait();
+      waitingForRecAfterEnd = false;
+      var rec = currentRec();
+      if(rec){ playVideo(rec, -1); return; }
+    }
+    updateQueueStatus();
+    renderAll();
+  }).catch(function(){
+    if(gen !== recGeneration || recForId !== id) return;
+    recList = []; recIndex = 0;
+    recLoading = false; recSettled = true; recUnavailable = true;
+    if(waitingForRecAfterEnd){
+      clearAutoplayWait();
+      waitingForRecAfterEnd = false;
+      updateQueueStatus();
+      renderAll();
+      showNotice("Antrean habis. Cari lagu berikutnya yuk.", "ok");
+      return;
+    }
+    updateQueueStatus();
+    renderAll();
+  });
+  return chain;
 }
 
 /* ================= QUEUE / FAV ACTIONS ================= */
@@ -948,6 +1052,9 @@ function queueEmptyHTML(){
       + "</div>"
       + '<button type="button" class="skip-btn" data-autoskip="1" aria-label="Lewati rekomendasi ini">' + SKIP_SVG.replace('width="17" height="17"', 'width="20" height="20"') + "</button>"
       + "</div>";
+  }
+  if(autoplayOn && recUnavailable){
+    return '<div class="empty"><strong>Tidak ada rekomendasi yang tersedia</strong>Putar otomatis nyala, tapi belum ada rekomendasi untuk lagu ini. Tambahkan lagu dari hasil cari, favorit, atau riwayat.</div>';
   }
   if(autoplayOn){
     return '<div class="empty"><strong>Antrean kosong</strong>Putar otomatis nyala — lagu berikutnya diambil dari rekomendasi. Atau tambahkan lagu dari hasil cari, favorit, atau riwayat.</div>';
@@ -1200,7 +1307,7 @@ $("autoplay-toggle").checked = autoplayOn;
 $("autoplay-toggle").addEventListener("change", function(){
   autoplayOn = this.checked;
   saveJSON(LS.autoplay, autoplayOn);
-  if(autoplayOn && current && recForId !== current.videoId) fetchRecommendations(current.videoId);
+  if(autoplayOn && current && (recForId !== current.videoId || recUnavailable)) fetchRecommendations(current.videoId);
   renderAll();
 });
 
