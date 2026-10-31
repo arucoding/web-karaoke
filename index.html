@@ -243,6 +243,48 @@
   .hapus-actions button{border:0;border-radius:999px;font-size:13.5px;font-weight:800;padding:10px 18px;min-height:44px}
   .hapus-cancel{background:var(--surface2);color:var(--ink)}
   .hapus-yes{background:var(--red);color:#1A0505}
+  .singer-save{background:var(--amber);color:var(--amber-ink)}
+  .singer-input-field{width:100%;background:var(--surface2);border:0;outline:0;border-radius:12px;color:var(--ink);font-size:15px;font-weight:600;padding:13px 16px;margin-bottom:18px}
+  .singer-input-field::placeholder{color:var(--faint)}
+  .singer-input-field:focus{outline:2px solid var(--amber);outline-offset:1px}
+
+  /* ---------- MODE TV ---------- */
+  .btn-tv{margin-left:auto;flex:none;border:0;border-radius:999px;background:var(--surface2);color:var(--ink);font-weight:800;font-size:13.5px;padding:10px 18px;min-height:42px;display:inline-flex;align-items:center;gap:8px}
+  .btn-tv:active{filter:brightness(1.25)}
+  .btn-tv[aria-pressed="true"]{background:var(--amber);color:var(--amber-ink)}
+  #tv-ticker{position:fixed;left:0;right:0;bottom:0;z-index:70;background:#101014;border-top:2px solid var(--amber);padding:16px 28px;display:none;align-items:center;gap:16px;font-size:clamp(18px,2.6vw,30px)}
+  body.tv #tv-ticker{display:flex}
+  #tv-ticker .k{color:var(--amber);font-weight:800;flex:none}
+  #tv-ticker .v{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:700}
+  body.tv .wrap{max-width:none;padding:18px 30px 120px}
+  body.tv .searchbar,body.tv .options-row,body.tv .col-side,body.tv .lainnya,body.tv .seek-row,body.tv .now-actions,body.tv .autoplay-row,body.tv .singer-row,body.tv .autonext{display:none}
+  body.tv .layout{display:block}
+  body.tv .stage{border-radius:14px}
+  body.tv .now{margin-top:24px}
+  body.tv .now h2{font-size:clamp(30px,4.6vw,54px)}
+  body.tv .now .channel{font-size:clamp(16px,2vw,23px)}
+  body.tv .lyrics{margin-top:30px;padding:0 12px}
+  body.tv .lyr-prev,body.tv .lyr-next{font-size:clamp(19px,2.7vw,31px);color:#C9C9D2;min-height:1.4em}
+  body.tv .lyr-active{font-size:clamp(36px,5.8vw,70px);color:#fff;margin:8px 0}
+  body.tv .transport{gap:44px;margin:30px 0 10px}
+  body.tv .tbtn{width:78px;height:78px}
+  body.tv .tbtn svg{width:38px;height:38px}
+  body.tv .tbtn.main{width:106px;height:106px}
+  body.tv .tbtn.main svg{width:48px;height:48px}
+  body.tv .tbtn.small{width:62px;height:62px}
+  body.tv .tbtn.small svg{width:30px;height:30px}
+  body.tv .upnext{font-size:clamp(16px,2.1vw,23px);margin-bottom:10px}
+
+  /* ---------- PENYANYI & LENCANA KARAOKE ---------- */
+  .singer-row{max-width:360px;margin:0 auto 16px;padding:0 2px}
+  .singer-row .t{font-weight:600;font-size:14.5px}
+  .singer-row .s{color:var(--muted);font-size:13px;font-weight:500;margin:1px 0 8px}
+  .singer-row input{width:100%;background:var(--surface);border:0;outline:0;border-radius:12px;color:var(--ink);font-size:14.5px;font-weight:600;padding:12px 16px;min-height:46px}
+  .singer-row input::placeholder{color:var(--faint)}
+  .singer-row input:focus{outline:2px solid var(--amber);outline-offset:1px}
+  .singer-name{color:var(--amber);font-weight:700}
+  .kara-badge{color:var(--amber);font-weight:700;border:1px solid rgba(255,176,32,.45);border-radius:999px;padding:0 7px;font-size:11px}
+
   @media(prefers-reduced-motion:reduce){
     .spinner{animation:none}
     .lainnya-head .chev,.switch .track,.switch .track::after,.seg-btn,.lyr-prev,.lyr-next,.lyr-active{transition:none}
@@ -258,6 +300,10 @@
       <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2.5" width="6" height="11" rx="3" fill="currentColor" stroke="none"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0"/><path d="M12 17.5V21"/><path d="M8.5 21h7"/></svg>
     </span>
     <span class="name">Web Karaoke<span class="dot">.</span></span>
+    <button type="button" class="btn-tv" id="tv-btn" aria-pressed="false">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="12" rx="2"/><path d="M9 21h6"/></svg>
+      <span id="tv-btn-label">Mode TV</span>
+    </button>
   </header>
 
   <div class="layout">
@@ -342,6 +388,12 @@
           <input type="checkbox" id="autoplay-toggle" checked />
           <span class="track" aria-hidden="true"></span>
         </label>
+      </div>
+
+      <div class="singer-row">
+        <div class="t">Penyanyi berikutnya</div>
+        <div class="s">Isi nama di sini, lalu antrekan lagunya — nama nempel ke lagu itu di antrean.</div>
+        <input type="text" id="singer-input" placeholder="Nama penyanyi (opsional)" autocomplete="off" maxlength="40" aria-label="Nama penyanyi untuk lagu berikutnya yang diantrekan" />
       </div>
 
       <p class="upnext" id="queue-status">Antrean kosong.</p>
@@ -462,6 +514,19 @@
         </footer>
       </div>
     </section>
+  </div>
+</div>
+
+<div id="tv-ticker" aria-hidden="true"><span class="k">Berikutnya:</span><span class="v" id="tv-ticker-title">—</span></div>
+
+<div class="hapus-overlay" id="singer-overlay" hidden>
+  <div class="hapus-box" role="dialog" aria-modal="true" aria-labelledby="singer-edit-title">
+    <p id="singer-edit-title">Nama penyanyi</p>
+    <input type="text" class="singer-input-field" id="singer-edit-input" placeholder="Nama penyanyi (kosongkan untuk hapus)" autocomplete="off" maxlength="40" aria-label="Nama penyanyi untuk lagu ini" />
+    <div class="hapus-actions">
+      <button type="button" class="hapus-cancel" id="singer-cancel">Batal</button>
+      <button type="button" class="singer-save" id="singer-save">Simpan</button>
+    </div>
   </div>
 </div>
 
@@ -660,7 +725,7 @@ function startProgressLoop(){
 /* ================= PLAYBACK CORE ================= */
 function playVideo(item){
   if(!item || !item.videoId) return;
-  current = { videoId: item.videoId, title: item.title || "Tanpa judul", author: item.author || "", lengthSeconds: item.lengthSeconds || 0, thumb: item.thumb || "" };
+  current = { videoId: item.videoId, title: item.title || "Tanpa judul", author: item.author || "", lengthSeconds: item.lengthSeconds || 0, thumb: item.thumb || "", singer: item.singer || "" };
   // Lagu yang mulai diputar keluar dari antrean — antrean murni daftar
   // "berikutnya", tidak pernah memuat lagu yang sedang/sudah diputar.
   var qi = queue.findIndex(function(q){ return q.videoId === item.videoId; });
@@ -769,7 +834,8 @@ function updateQueueStatus(){
   var rec = currentRec();
   if(nextItem){
     var rest = queue.length - 1; // lagu lain setelah "berikutnya" ini
-    el.innerHTML = '<span class="k">Berikutnya:</span> <span class="txt">' + esc(nextItem.title || "") + (rest > 0 ? " · " + rest + " lagi" : "") + "</span>";
+    var nextLabel = (nextItem.singer ? esc(nextItem.singer) + " — " : "") + esc(nextItem.title || "");
+    el.innerHTML = '<span class="k">Berikutnya:</span> <span class="txt">' + nextLabel + (rest > 0 ? " · " + rest + " lagi" : "") + "</span>";
   } else if(autoplayOn && rec){
     el.innerHTML = "";
   } else if(autoplayOn && current){
@@ -781,6 +847,7 @@ function updateQueueStatus(){
   } else {
     el.textContent = "Antrean kosong.";
   }
+  updateTvTicker();
   updateAutoNextRow();
 }
 
@@ -1143,6 +1210,9 @@ function fetchLyricsFor(item){
 }
 
 /* ================= QUEUE / FAV ACTIONS ================= */
+/* Nama penyanyi diambil dari kolom "Penyanyi berikutnya" saat lagu
+   diantrekan (bisa juga diedit per item di tab Antrean). Nama tersimpan
+   sebagai field singer di item antrean — ikut tersimpan di wk_queue_v1. */
 function addToQueue(item, silent){
   if(!item || !item.videoId) return;
   if(current && current.videoId === item.videoId){
@@ -1153,9 +1223,12 @@ function addToQueue(item, silent){
     if(!silent) showNotice("Lagu itu sudah ada di antrean.", "warn");
     return;
   }
-  queue.push({ videoId: item.videoId, title: item.title || "Tanpa judul", author: item.author || "", lengthSeconds: item.lengthSeconds || 0, thumb: item.thumb || "" });
+  var singerInput = $("singer-input");
+  var singer = item.singer || (singerInput ? singerInput.value.trim() : "");
+  queue.push({ videoId: item.videoId, title: item.title || "Tanpa judul", author: item.author || "", lengthSeconds: item.lengthSeconds || 0, thumb: item.thumb || "", singer: singer });
   saveJSON(LS.queue, queue);
-  if(!silent) showNotice("Ditambahkan ke antrean: <strong>" + esc(item.title || "") + "</strong>", "ok");
+  if(singerInput && singerInput.value) singerInput.value = "";
+  if(!silent) showNotice("Ditambahkan ke antrean: <strong>" + esc(item.title || "") + "</strong>" + (singer ? " · Penyanyi: <strong>" + esc(singer) + "</strong>" : ""), "ok");
   renderAll();
 }
 var pendingQueueUndo = null;
@@ -1228,6 +1301,7 @@ function itemHTML(item, opts){
   if(!opts.hideQueue) h += '<button class="mini" data-act="queue">+ Antrean</button>';
   h += '<button class="mini' + (fav ? " fav-on" : "") + '" data-act="fav">' + (fav ? "★ Favorit" : "☆ Favorit") + "</button>";
   if(opts.queueControls){
+    h += '<button class="mini" data-act="singer">Nama</button>';
     h += '<button class="mini icon-only" data-act="up" aria-label="Naikkan di antrean"' + (opts.isFirst ? " disabled" : "") + '>↑</button>';
     h += '<button class="mini icon-only" data-act="down" aria-label="Turunkan di antrean"' + (opts.isLast ? " disabled" : "") + '>↓</button>';
     h += '<button class="mini icon-only" data-act="remove" aria-label="Hapus dari antrean">✕</button>';
@@ -1266,6 +1340,7 @@ function bindList(container, list, optsFor){
     }
     else if(act === "up"){ moveQueue(idx, -1); }
     else if(act === "down"){ moveQueue(idx, 1); }
+    else if(act === "singer"){ openSingerEditor(idx); }
   });
 }
 window.__wkLists = {};
@@ -1320,10 +1395,15 @@ function renderAll(){
     resultsSearched
       ? '<div class="empty"><strong>Tidak ditemukan lagu yang cocok</strong>Coba kata kunci lain — misalnya nama penyanyi + judul lagu.</div>'
       : '<div class="empty"><strong>Belum ada hasil</strong>Cari lagu dulu lewat kolom pencarian di atas.</div>',
-    function(item){ return {}; });
+    function(item){
+      return karaokeScore(item) > 0 ? { extraMeta: '<span class="kara-badge">Karaoke</span>' } : {};
+    });
 
   renderList("queue-list", queue, queueEmptyHTML(),
-    function(item, i){ return { queueControls: true, hideQueue: true, queueNum: i, isFirst: i === 0, isLast: i === queue.length - 1 }; });
+    function(item, i){
+      return { queueControls: true, hideQueue: true, queueNum: i, isFirst: i === 0, isLast: i === queue.length - 1,
+        extraMeta: item.singer ? '<span class="singer-name">' + esc(item.singer) + "</span>" : "" };
+    });
 
   renderList("favs-list", favorites,
     '<div class="empty"><strong>Belum ada favorit</strong>Tekan ☆ Favorit di lagu mana pun buat menyimpannya di sini.</div>',
@@ -1436,6 +1516,36 @@ function pingGAS(){
   });
 }
 
+/* ================= KARAOKE-AWARE SEARCH =================
+   Hasil pencarian diurutkan ulang (tidak ada yang dibuang): video dari
+   channel karaoke dikenal dan judul berkesan karaoke naik ke atas,
+   sisanya tetap tampil di bawah dengan urutan asal. */
+var KARAOKE_CHANNELS = [
+  "sing king", "karafun", "kara fun", "pocket songs", "sing2music",
+  "zoom karaoke", "sbi karaoke", "karaoke version", "sing sing karaoke",
+  "funbox karaoke", "karaoke academy", "vocal star", "karaoke hits",
+  "karaoke kanta", "golden karaoke", "starmaker", "wesing", "we sing",
+  "singa karaoke", "luckystar karaoke", "karaoke pro", "karaoke piano"
+];
+function karaokeScore(item){
+  var score = 0;
+  var title = String(item.title || "").toLowerCase();
+  var author = String(item.author || "").toLowerCase();
+  for(var i = 0; i < KARAOKE_CHANNELS.length; i++){
+    if(author.indexOf(KARAOKE_CHANNELS[i]) >= 0){ score += 3; break; }
+  }
+  if(/karaoke|karoke/.test(title)) score += 2;
+  if(/sing ?along/.test(title)) score += 2;
+  if(/instrumental|backing track|minus one|tanpa vokal|no vocal/.test(title)) score += 1;
+  if(/karaoke|karoke/.test(author)) score += 1;
+  return score;
+}
+function sortKaraokeFirst(list){
+  return list.map(function(item, i){ return { item: item, i: i, s: karaokeScore(item) }; })
+    .sort(function(a, b){ return (b.s - a.s) || (a.i - b.i); })
+    .map(function(x){ return x.item; });
+}
+
 function searchGAS(query){
   return fetchWithTimeout(GAS_BASE + "?action=search&q=" + encodeURIComponent(query), GAS_SEARCH_TIMEOUT).then(function(d){
     if(!d || d.ok !== true || !Array.isArray(d.results)) throw new Error("GAS search failed");
@@ -1514,14 +1624,15 @@ function doSearch(){
   }).then(function(data){
     setHealth("on", "Pencarian: online");
     resultsSearched = true;
-    lastResults = data.filter(function(v){ return v && v.videoId; }).slice(0, 25).map(function(v){
+    lastResults = sortKaraokeFirst(data.filter(function(v){ return v && v.videoId; }).slice(0, 25).map(function(v){
       return { videoId: v.videoId, title: v.title || "Tanpa judul", author: v.author || "", lengthSeconds: v.lengthSeconds || 0, thumb: v.thumb || "" };
-    });
+    }));
     if(lastResults.length === 0){
       expandLainnya();
       $("results-status").textContent = "Tidak ada hasil untuk “" + q + "”. Coba kata kunci lain, atau tempel link YouTube langsung di bawah panggung.";
     } else {
-      $("results-status").textContent = lastResults.length + " hasil untuk “" + q + "”. Tekan Putar untuk langsung nyanyi, atau + Antrean buat nanti.";
+      var anyKaraoke = lastResults.some(function(v){ return karaokeScore(v) > 0; });
+      $("results-status").textContent = lastResults.length + " hasil untuk “" + q + "”." + (anyKaraoke ? " Versi karaoke diutamakan di atas." : "") + " Tekan Putar untuk langsung nyanyi, atau + Antrean buat nanti.";
     }
     renderAll();
   }).catch(function(){
@@ -1680,6 +1791,7 @@ $("clear-history-btn").addEventListener("click", function(){
 
 /* keyboard shortcuts */
 document.addEventListener("keydown", function(e){
+  if(e.key === "Escape" && tvMode){ setTvMode(false); return; }
   var tag = (e.target && e.target.tagName) || "";
   if(tag === "INPUT" || tag === "TEXTAREA" || e.target.isContentEditable) return;
   if(e.code === "Space"){ e.preventDefault(); togglePlay(); }
@@ -1771,6 +1883,75 @@ $("mic-reverb").addEventListener("input", function(){
   var wet = parseInt(this.value, 10) / 100;
   wetGain.gain.setTargetAtTime(wet * 0.9, audioCtx.currentTime, 0.03);
   dryGain.gain.setTargetAtTime(1 - wet * 0.5, audioCtx.currentTime, 0.03);
+});
+
+/* ================= MODE TV =================
+   Tampilan full-screen buat dibaca dari jauh: panggung + judul besar,
+   lirik sinkron diperbesar kontras tinggi, transport besar, dan ticker
+   "Berikutnya: …" menempel di bawah layar. Pemutar tidak dipindah dari
+   DOM-nya — mode ini murni kelas CSS di <body> plus fullscreen API
+   best-effort, jadi lagu yang sedang jalan tidak pernah terputus. */
+var tvMode = false;
+function updateTvTicker(){
+  var el = $("tv-ticker-title");
+  if(!el) return;
+  var nextItem = queueNextItem();
+  if(nextItem){
+    el.textContent = (nextItem.singer ? nextItem.singer + " — " : "") + (nextItem.title || "Tanpa judul");
+    return;
+  }
+  var rec = currentRec();
+  el.textContent = (autoplayOn && rec) ? (rec.title || "Tanpa judul") : "Antrean kosong — cari lagu berikutnya";
+}
+function setTvMode(on){
+  tvMode = !!on;
+  document.body.classList.toggle("tv", tvMode);
+  $("tv-btn").setAttribute("aria-pressed", tvMode ? "true" : "false");
+  $("tv-btn-label").textContent = tvMode ? "Keluar Mode TV" : "Mode TV";
+  $("tv-ticker").setAttribute("aria-hidden", tvMode ? "false" : "true");
+  try{
+    if(tvMode){
+      if(document.documentElement.requestFullscreen){
+        var p = document.documentElement.requestFullscreen();
+        if(p && typeof p.catch === "function") p.catch(function(){});
+      }
+      window.scrollTo(0, 0);
+    } else if(document.fullscreenElement && document.exitFullscreen){
+      var q = document.exitFullscreen();
+      if(q && typeof q.catch === "function") q.catch(function(){});
+    }
+  }catch(e){}
+  updateTvTicker();
+}
+$("tv-btn").addEventListener("click", function(){ setTvMode(!tvMode); });
+
+/* ================= EDIT NAMA PENYANYI (PER ITEM ANTREAN) ================= */
+var singerEditIdx = -1;
+function openSingerEditor(idx){
+  if(!queue[idx]) return;
+  singerEditIdx = idx;
+  $("singer-edit-title").textContent = "Penyanyi untuk: " + (queue[idx].title || "Tanpa judul");
+  $("singer-edit-input").value = queue[idx].singer || "";
+  $("singer-overlay").hidden = false;
+  setTimeout(function(){ try{ $("singer-edit-input").focus(); $("singer-edit-input").select(); }catch(e){} }, 30);
+}
+function closeSingerEditor(){
+  $("singer-overlay").hidden = true;
+  singerEditIdx = -1;
+}
+$("singer-cancel").addEventListener("click", closeSingerEditor);
+$("singer-overlay").addEventListener("click", function(e){ if(e.target === this) closeSingerEditor(); });
+$("singer-save").addEventListener("click", function(){
+  if(singerEditIdx >= 0 && queue[singerEditIdx]){
+    queue[singerEditIdx].singer = $("singer-edit-input").value.trim();
+    saveJSON(LS.queue, queue);
+    renderAll();
+  }
+  closeSingerEditor();
+});
+$("singer-edit-input").addEventListener("keydown", function(e){
+  if(e.key === "Enter"){ e.preventDefault(); $("singer-save").click(); }
+  else if(e.key === "Escape"){ closeSingerEditor(); }
 });
 
 /* ================= INIT ================= */
