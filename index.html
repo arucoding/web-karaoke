@@ -491,9 +491,14 @@ var favorites = loadJSON(LS.favs, []);
 var historyList = loadJSON(LS.hist, []);
 var queue = loadJSON(LS.queue, []);
 var current = loadJSON(LS.current, null); // {videoId,title,author}
-var currentIndex = -1; // index inside queue, -1 = playing outside queue
+// Antrean isinya HANYA lagu yang belum diputar: lagu yang mulai diputar
+// langsung keluar dari antrean (lihat playVideo), jadi tidak ada lagu
+// yang tumpang tindih antara "sedang diputar" dan antrean. Antrean
+// tersimpan dari versi lama bisa masih memuat lagu yang sedang diputar —
+// keluarkan sekali di sini supaya tidak dobel.
 if(current){
-  currentIndex = queue.findIndex(function(q){ return q.videoId === current.videoId; });
+  var dupIdx = queue.findIndex(function(q){ return q.videoId === current.videoId; });
+  if(dupIdx >= 0){ queue.splice(dupIdx, 1); saveJSON(LS.queue, queue); }
 }
 var autoplayOn = loadJSON(LS.autoplay, true) !== false; // default ON
 
@@ -606,12 +611,19 @@ window.onYouTubeIframeAPIReady = function(){
       },
       onError: function(e){
         var code = e && e.data;
+        // Loncat otomatis hanya berlaku selama lagu yang error masih
+        // lagu yang sedang aktif — kalau user sudah pindah lagu manual
+        // dalam jeda ini, jangan timpa pilihan user.
+        var errId = current ? current.videoId : null;
+        function skipIfStillCurrent(){
+          if(current && current.videoId === errId) playNext(false);
+        }
         if(code === 101 || code === 150){
           showNotice("Video ini tidak boleh diputar di luar YouTube oleh pemiliknya — loncat ke lagu berikutnya di antrean.", "warn");
-          setTimeout(function(){ playNext(false); }, 1200);
+          setTimeout(skipIfStillCurrent, 1200);
         } else if(code === 100){
           showNotice("Video tidak ditemukan atau sudah dihapus — loncat ke lagu berikutnya.", "warn");
-          setTimeout(function(){ playNext(false); }, 1200);
+          setTimeout(skipIfStillCurrent, 1200);
         } else if(code === 153){
           showNotice("Video tidak tersedia (kode 153) — kemungkinan videonya sudah dihapus atau di-private pemiliknya. Coba lagu lain.", "err");
         } else {
@@ -646,10 +658,13 @@ function startProgressLoop(){
 }
 
 /* ================= PLAYBACK CORE ================= */
-function playVideo(item, queueIndex){
+function playVideo(item){
   if(!item || !item.videoId) return;
   current = { videoId: item.videoId, title: item.title || "Tanpa judul", author: item.author || "", lengthSeconds: item.lengthSeconds || 0, thumb: item.thumb || "" };
-  currentIndex = (typeof queueIndex === "number") ? queueIndex : queue.findIndex(function(q){ return q.videoId === item.videoId; });
+  // Lagu yang mulai diputar keluar dari antrean — antrean murni daftar
+  // "berikutnya", tidak pernah memuat lagu yang sedang/sudah diputar.
+  var qi = queue.findIndex(function(q){ return q.videoId === item.videoId; });
+  if(qi >= 0){ queue.splice(qi, 1); saveJSON(LS.queue, queue); }
   saveJSON(LS.current, current);
   addToHistory(current);
   updateNowUI();
@@ -687,38 +702,27 @@ function playVideo(item, queueIndex){
 }
 
 function playNext(fromEnded){
-  if(queue.length === 0){
-    if(autoplayOn && currentRec()){
-      playVideo(currentRec(), -1);
-      return;
-    }
-    if(fromEnded && autoplayOn && current && !recSettled){
-      // Rekomendasi masih dimuat — tunggu maksimal 15 detik sejak lagu selesai
-      startAutoplayWait();
-      return;
-    }
-    if(fromEnded) showNotice("Antrean habis. Cari lagu berikutnya yuk.", "ok");
+  // Antrean selalu berisi lagu yang belum diputar — berikutnya = antrean[0],
+  // dan playVideo mengeluarkannya dari antrean begitu mulai diputar.
+  if(queue.length > 0){ playVideo(queue[0]); return; }
+  if(autoplayOn && currentRec()){ playVideo(currentRec()); return; }
+  if(!fromEnded) return;
+  if(autoplayOn && current && !recSettled){
+    // Rekomendasi masih dimuat — tunggu maksimal 15 detik sejak lagu selesai
+    startAutoplayWait();
     return;
   }
-  var next = currentIndex + 1;
-  if(next >= queue.length){
-    if(fromEnded){
-      // Antrean selesai: lanjut ke rekomendasi kalau putar otomatis nyala
-      if(autoplayOn && currentRec()){ playVideo(currentRec(), -1); return; }
-      if(autoplayOn && current && !recSettled){ startAutoplayWait(); return; }
-      if(autoplayOn) showNotice("Antrean habis. Cari lagu berikutnya yuk.", "ok");
-      else showNotice("Antrean selesai — semua lagu sudah diputar.", "ok");
-      return;
-    }
-    next = 0;
-  }
-  playVideo(queue[next], next);
+  if(autoplayOn) showNotice("Antrean habis. Cari lagu berikutnya yuk.", "ok");
+  else showNotice("Antrean selesai — semua lagu sudah diputar.", "ok");
 }
 function playPrev(){
-  if(queue.length === 0) return;
-  var prev = currentIndex - 1;
-  if(prev < 0) prev = queue.length - 1;
-  playVideo(queue[prev], prev);
+  // Lagu sebelumnya diambil dari riwayat putar (antrean tidak lagi
+  // memuat lagu yang sudah diputar, jadi posisi antrean tidak bisa
+  // dipakai untuk mundur).
+  if(!current) return;
+  var hi = historyList.findIndex(function(h){ return h.videoId === current.videoId; });
+  var prev = (hi >= 0 && hi + 1 < historyList.length) ? historyList[hi + 1] : null;
+  if(prev) playVideo(prev);
 }
 
 function addToHistory(item){
@@ -750,13 +754,11 @@ function syncNowFavBtn(){
   }
 }
 
-/* Lagu antrean yang akan main setelah lagu sekarang (null kalau tidak ada). */
+/* Lagu antrean yang akan main setelah lagu sekarang (null kalau tidak ada).
+   Antrean hanya berisi lagu yang belum diputar, jadi berikutnya selalu
+   antrean paling depan. */
 function queueNextItem(){
-  if(queue.length === 0) return null;
-  if(currentIndex >= 0){
-    return (currentIndex + 1 < queue.length) ? queue[currentIndex + 1] : null;
-  }
-  return queue[0];
+  return queue.length ? queue[0] : null;
 }
 
 var SKIP_SVG = '<svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M5 5.3v13.4c0 .9 1 1.5 1.8 1l8.7-6.7a1.2 1.2 0 0 0 0-2L6.8 4.3A1.2 1.2 0 0 0 5 5.3Z"/><rect x="17" y="4" width="2.6" height="16" rx="1.3"/></svg>';
@@ -766,8 +768,7 @@ function updateQueueStatus(){
   var nextItem = queueNextItem();
   var rec = currentRec();
   if(nextItem){
-    var rest = 0;
-    if(currentIndex >= 0) rest = queue.length - (currentIndex + 2);
+    var rest = queue.length - 1; // lagu lain setelah "berikutnya" ini
     el.innerHTML = '<span class="k">Berikutnya:</span> <span class="txt">' + esc(nextItem.title || "") + (rest > 0 ? " · " + rest + " lagi" : "") + "</span>";
   } else if(autoplayOn && rec){
     el.innerHTML = "";
@@ -834,7 +835,7 @@ function startAutoplayWait(){
     autoplayWaitTimer = null;
     if(!waitingForRecAfterEnd) return;
     waitingForRecAfterEnd = false;
-    if(currentRec()){ playVideo(currentRec(), -1); return; }
+    if(currentRec()){ playVideo(currentRec()); return; }
     recGeneration++;
     recLoading = false; recSettled = true; recUnavailable = true; recList = []; recIndex = 0;
     updateQueueStatus();
@@ -937,7 +938,7 @@ function fetchRecommendations(id){
       clearAutoplayWait();
       waitingForRecAfterEnd = false;
       var rec = currentRec();
-      if(rec){ playVideo(rec, -1); return; }
+      if(rec){ playVideo(rec); return; }
     }
     updateQueueStatus();
     renderAll();
@@ -1144,6 +1145,10 @@ function fetchLyricsFor(item){
 /* ================= QUEUE / FAV ACTIONS ================= */
 function addToQueue(item, silent){
   if(!item || !item.videoId) return;
+  if(current && current.videoId === item.videoId){
+    if(!silent) showNotice("Lagu itu sedang diputar sekarang — tidak perlu masuk antrean.", "warn");
+    return;
+  }
   if(queue.some(function(q){ return q.videoId === item.videoId; })){
     if(!silent) showNotice("Lagu itu sudah ada di antrean.", "warn");
     return;
@@ -1158,13 +1163,10 @@ var queueUndoTimer = null;
 function removeFromQueue(idx){
   var removedItem = queue[idx];
   if(!removedItem) return;
-  var wasCurrent = (idx === currentIndex);
   queue.splice(idx, 1);
-  if(idx < currentIndex) currentIndex--;
-  if(wasCurrent) currentIndex = -1;
   saveJSON(LS.queue, queue);
   renderAll();
-  pendingQueueUndo = { item: removedItem, index: idx, wasCurrent: wasCurrent };
+  pendingQueueUndo = { item: removedItem, index: idx };
   if(queueUndoTimer) clearTimeout(queueUndoTimer);
   showNotice('Dihapus dari antrean: <strong>' + esc(removedItem.title || "") + '</strong> <button type="button" id="undo-queue-remove">Urungkan</button>', "warn", true);
   var undoBtn = $("undo-queue-remove");
@@ -1172,10 +1174,7 @@ function removeFromQueue(idx){
     if(!pendingQueueUndo) return;
     var undoItem = pendingQueueUndo.item;
     var insertAt = Math.min(pendingQueueUndo.index, queue.length);
-    var wasCur = pendingQueueUndo.wasCurrent;
     queue.splice(insertAt, 0, undoItem);
-    if(wasCur) currentIndex = insertAt;
-    else if(insertAt <= currentIndex) currentIndex++;
     pendingQueueUndo = null;
     if(queueUndoTimer){ clearTimeout(queueUndoTimer); queueUndoTimer = null; }
     saveJSON(LS.queue, queue);
@@ -1192,8 +1191,6 @@ function moveQueue(idx, dir){
   var target = idx + dir;
   if(target < 0 || target >= queue.length) return;
   var tmp = queue[idx]; queue[idx] = queue[target]; queue[target] = tmp;
-  if(currentIndex === idx) currentIndex = target;
-  else if(currentIndex === target) currentIndex = idx;
   saveJSON(LS.queue, queue);
   renderAll();
 }
@@ -1257,8 +1254,7 @@ function bindList(container, list, optsFor){
     var item = list[idx];
     var act = btn.dataset.act;
     if(act === "play"){
-      var qi = queue.findIndex(function(q){ return q.videoId === item.videoId; });
-      playVideo(item, qi >= 0 ? qi : -1);
+      playVideo(item);
     } else if(act === "queue"){ addToQueue(item); }
     else if(act === "fav"){ toggleFav(item); }
     else if(act === "remove"){
@@ -1327,7 +1323,7 @@ function renderAll(){
     function(item){ return {}; });
 
   renderList("queue-list", queue, queueEmptyHTML(),
-    function(item, i){ return { queueControls: true, hideQueue: true, queueNum: i, playing: current && i === currentIndex, isFirst: i === 0, isLast: i === queue.length - 1 }; });
+    function(item, i){ return { queueControls: true, hideQueue: true, queueNum: i, isFirst: i === 0, isLast: i === queue.length - 1 }; });
 
   renderList("favs-list", favorites,
     '<div class="empty"><strong>Belum ada favorit</strong>Tekan ☆ Favorit di lagu mana pun buat menyimpannya di sini.</div>',
@@ -1580,7 +1576,7 @@ function playFromLink(toQueue){
   var item = { videoId: id, title: "Video YouTube (" + id + ")", author: "", lengthSeconds: 0, thumb: "" };
   // Putar / antrekan seketika — jangan tunggu fetch judul (bisa lama kalau
   // semua server Invidious lambat). Judul asli diambil di latar belakang.
-  if(toQueue){ addToQueue(item); } else { playVideo(item, -1); }
+  if(toQueue){ addToQueue(item); } else { playVideo(item); }
   fetchTitle(id).then(function(info){
     if(!info) return;
     if(current && current.videoId === id){
@@ -1619,7 +1615,7 @@ $("link-queue-btn").addEventListener("click", function(){ playFromLink(true); })
 $("btn-play").addEventListener("click", togglePlay);
 function togglePlay(){
   if(fallbackActive){ showNotice("Di mode pemutar cadangan, pakai tombol play/jeda di dalam video.", "warn"); return; }
-  if(!playerReady || !player){ if(current) playVideo(current, currentIndex); return; }
+  if(!playerReady || !player){ if(current) playVideo(current); return; }
   try{
     if(isPlaying) player.pauseVideo(); else player.playVideo();
   }catch(e){}
@@ -1672,7 +1668,7 @@ $("hapus-overlay").addEventListener("click", function(e){
 });
 $("clear-queue-btn").addEventListener("click", function(){
   askHapus("Hapus semua lagu di antrean? Lagu yang sedang diputar tetap jalan sampai selesai.", function(){
-    queue = []; currentIndex = -1; saveJSON(LS.queue, queue); renderAll();
+    queue = []; saveJSON(LS.queue, queue); renderAll();
     showNotice("Antrean dibersihkan. Lagu yang sedang diputar tetap jalan sampai selesai.", "ok");
   });
 });
