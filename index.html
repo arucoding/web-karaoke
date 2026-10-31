@@ -1,0 +1,1131 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="color-scheme" content="dark" />
+<link rel="icon" href="data:," />
+<title>Web Karaoke</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    color-scheme: dark;
+    --bg:#0B0B0E;
+    --bg2:#121216;
+    --panel:#17171C;
+    --panel2:#1E1E24;
+    --line:#2A2A33;
+    --line2:#3A3A46;
+    --text:#F4F1EA;
+    --muted:#A8A29A;
+    --muted2:#7C786F;
+    --amber:#FFB020;
+    --amber-dark:#1A1405;
+    --red:#FF4D4D;
+    --red-dark:#2A0E0E;
+    --green:#2ECC71;
+    --radius:14px;
+    --radius-sm:10px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:"Plus Jakarta Sans",system-ui,-apple-system,Segoe UI,Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+  button{font-family:inherit;cursor:pointer}
+  input{font-family:inherit}
+  a{color:var(--amber)}
+  ::selection{background:var(--amber);color:#000}
+
+  .wrap{max-width:1440px;margin:0 auto;padding:16px 16px 40px}
+  @media(min-width:900px){.wrap{padding:20px 24px 48px}}
+
+  /* ---------- TOP / SEARCH ---------- */
+  .topbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:6px}
+  .brand{display:flex;align-items:center;gap:10px;margin-right:4px}
+  .brand-mark{width:38px;height:38px;border-radius:10px;background:var(--amber);color:#111;display:grid;place-items:center;flex:none}
+  .brand-mark svg{width:22px;height:22px}
+  .brand h1{font-size:20px;line-height:1;margin:0;font-weight:800;letter-spacing:-.02em}
+  .brand p{margin:2px 0 0;font-size:12px;color:var(--muted)}
+
+  .searchbar{display:flex;gap:8px;flex:1 1 420px;min-width:0}
+  .searchbar .field{flex:1;display:flex;align-items:center;gap:8px;background:var(--panel);border:1.5px solid var(--line2);border-radius:12px;padding:0 6px 0 14px;min-height:52px}
+  .searchbar .field:focus-within{border-color:var(--amber)}
+  .searchbar input[type=text]{flex:1;min-width:0;background:transparent;border:0;outline:0;color:var(--text);font-size:16px;height:48px}
+  .searchbar input::placeholder{color:var(--muted2)}
+  .btn{border:1.5px solid var(--line2);background:var(--panel2);color:var(--text);border-radius:12px;font-weight:700;font-size:14px;padding:0 16px;min-height:48px;display:inline-flex;align-items:center;justify-content:center;gap:8px;white-space:nowrap}
+  .btn:active{transform:translateY(1px)}
+  .btn-primary{background:var(--amber);border-color:var(--amber);color:#171106}
+  .btn-primary:hover{background:#FFBE45}
+  .btn-ghost{background:transparent}
+  .btn-danger{color:#FF9A9A;border-color:#5A2A2A;background:var(--red-dark)}
+  .btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
+
+  .options-row{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center;margin:10px 0 16px}
+  .switch{display:inline-flex;align-items:center;gap:9px;cursor:pointer;user-select:none;font-size:13.5px;font-weight:600;color:var(--text)}
+  .switch input{position:absolute;opacity:0;width:0;height:0}
+  .switch .track{width:42px;height:24px;border-radius:999px;background:#33333D;border:1.5px solid var(--line2);position:relative;flex:none;transition:background .15s}
+  .switch .track::after{content:"";position:absolute;top:2px;left:2px;width:17px;height:17px;border-radius:50%;background:#CFCBC2;transition:left .15s,background .15s}
+  .switch input:checked + .track{background:var(--amber);border-color:var(--amber)}
+  .switch input:checked + .track::after{left:19px;background:#171106}
+  .switch input:focus-visible + .track{outline:2px solid var(--amber);outline-offset:2px}
+  .hint{font-size:12.5px;color:var(--muted)}
+  .hint kbd{font-family:"JetBrains Mono",monospace;font-size:11px;background:var(--panel2);border:1px solid var(--line2);border-bottom-width:2px;border-radius:5px;padding:1px 6px;color:var(--text)}
+  .health{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;font-weight:700;color:var(--muted)}
+  .health .dot{width:9px;height:9px;border-radius:50%;background:#55555F;flex:none}
+  .health.on{color:#9BE8BC}
+  .health.on .dot{background:var(--green)}
+  .health.off{color:#FFB3B3}
+  .health.off .dot{background:var(--red)}
+
+  /* ---------- LAYOUT ---------- */
+  .layout{display:grid;grid-template-columns:1fr;gap:16px;align-items:start}
+  @media(min-width:1020px){.layout{grid-template-columns:minmax(0,1fr) 400px}}
+
+  /* ---------- STAGE ---------- */
+  .stage{background:#000;border:1.5px solid var(--line);border-radius:16px;overflow:hidden}
+  .stage-frame{position:relative;width:100%;aspect-ratio:16/9;background:#000}
+  .stage-frame iframe,.stage-frame #yt-player{position:absolute;inset:0;width:100%;height:100%;border:0}
+  .stage-empty{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center;padding:24px;color:var(--muted);background:radial-gradient(640px 300px at 50% 0%,#1C1A12 0%,#000 62%)}
+  .stage-empty .big{font-size:34px;line-height:1}
+  .stage-empty strong{color:var(--text);font-size:17px}
+  .stage-empty p{margin:0;font-size:13.5px;max-width:420px;line-height:1.55}
+
+  .notice{display:none;margin:12px 0 0;padding:11px 14px;border-radius:var(--radius-sm);font-size:13.5px;line-height:1.5;font-weight:600}
+  .notice.show{display:block}
+  .notice.warn{background:#2B1E07;border:1.5px solid #6B4E12;color:#FFD98A}
+  .notice.err{background:var(--red-dark);border:1.5px solid #6E2B2B;color:#FFB3B3}
+  .notice.ok{background:#0E2A1A;border:1.5px solid #1F5C39;color:#9BE8BC}
+  .notice button{margin-left:8px;text-decoration:underline;background:none;border:0;color:inherit;font-weight:800;font-size:13.5px;padding:0}
+
+  .now{padding:16px 2px 0}
+  .now-label{font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--amber);font-weight:700}
+  .now h2{margin:6px 0 4px;font-size:clamp(19px,2.4vw,26px);line-height:1.25;font-weight:800;letter-spacing:-.01em;overflow-wrap:anywhere}
+  .now .channel{color:var(--muted);font-size:14px;margin:0}
+  .now-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+  .btn-fav.active{background:#3A2A05;border-color:var(--amber);color:var(--amber)}
+
+  .controls{margin-top:16px;background:var(--panel);border:1.5px solid var(--line);border-radius:16px;padding:14px}
+  .controls-main{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .ctl{width:56px;height:56px;border-radius:14px;border:1.5px solid var(--line2);background:var(--panel2);color:var(--text);display:grid;place-items:center;flex:none}
+  .ctl svg{width:24px;height:24px}
+  .ctl:active{transform:translateY(1px)}
+  .ctl-play{width:68px;height:68px;border-radius:16px;background:var(--amber);border-color:var(--amber);color:#171106}
+  .ctl-play svg{width:30px;height:30px}
+  .vol{display:flex;align-items:center;gap:8px;margin-left:auto}
+  .vol label{font-size:12px;color:var(--muted);font-weight:700}
+  input[type=range]{accent-color:var(--amber);width:110px;height:28px;cursor:pointer}
+  .progress-row{display:flex;align-items:center;gap:10px;margin-top:12px}
+  .progress-row .t{font-family:"JetBrains Mono",monospace;font-size:12px;color:var(--muted);min-width:42px}
+  .progress-row .t:last-child{text-align:right}
+  .progress-row input[type=range]{flex:1;width:auto}
+  .queue-status{font-size:12.5px;color:var(--muted);margin-top:8px}
+
+  .box{margin-top:16px;background:var(--panel);border:1.5px solid var(--line);border-radius:16px;padding:16px}
+  .box h3{margin:0 0 4px;font-size:15px;font-weight:800}
+  .box p.desc{margin:0 0 12px;font-size:13px;color:var(--muted);line-height:1.55}
+  .link-row{display:flex;gap:8px;flex-wrap:wrap}
+  .link-row input{flex:1 1 220px;min-width:0;background:var(--bg2);border:1.5px solid var(--line2);border-radius:12px;color:var(--text);font-size:14.5px;padding:0 14px;min-height:48px;outline:0}
+  .link-row input:focus{border-color:var(--amber)}
+
+  .mic-row{display:flex;flex-wrap:wrap;gap:14px 22px;align-items:center}
+  .mic-btn{display:inline-flex;align-items:center;gap:9px;border-radius:12px;border:1.5px solid var(--line2);background:var(--panel2);color:var(--text);font-weight:800;font-size:14px;padding:0 18px;min-height:50px}
+  .mic-btn .dot{width:10px;height:10px;border-radius:50%;background:#55555F;flex:none}
+  .mic-btn.on{background:var(--red-dark);border-color:var(--red);color:#FFC4C4}
+  .mic-btn.on .dot{background:var(--red);box-shadow:0 0 0 4px rgba(255,77,77,.18)}
+  .slider-group{display:flex;align-items:center;gap:8px}
+  .slider-group label{font-size:12.5px;color:var(--muted);font-weight:700;white-space:nowrap}
+  .warn-text{margin-top:12px;font-size:12.5px;line-height:1.6;color:#FFD98A;background:#241B06;border:1px solid #55420F;border-radius:var(--radius-sm);padding:10px 12px}
+
+  /* ---------- SIDE PANEL / TABS ---------- */
+  .panel{background:var(--panel);border:1.5px solid var(--line);border-radius:16px;overflow:hidden;display:flex;flex-direction:column;max-height:none}
+  @media(min-width:1020px){.panel{position:sticky;top:16px;max-height:calc(100vh - 32px)}}
+  .tabs{display:grid;grid-template-columns:repeat(4,1fr);border-bottom:1.5px solid var(--line);background:var(--bg2)}
+  .tab{appearance:none;border:0;background:transparent;color:var(--muted);font-weight:700;font-size:13px;padding:14px 4px 12px;border-bottom:3px solid transparent;display:flex;flex-direction:column;align-items:center;gap:2px}
+  .tab .count{font-family:"JetBrains Mono",monospace;font-size:11px;background:var(--panel2);border:1px solid var(--line2);border-radius:999px;padding:0 7px;line-height:18px;color:var(--muted)}
+  .tab.active{color:var(--text);border-bottom-color:var(--amber)}
+  .tab.active .count{color:var(--amber);border-color:#6B4E12}
+  .tab-body{overflow-y:auto;padding:12px}
+  @media(max-width:1019px){.tab-body{max-height:70vh}}
+  .tab-toolbar{display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap}
+  .tab-toolbar .spacer{flex:1}
+  .small-btn{border:1.5px solid var(--line2);background:var(--panel2);color:var(--text);border-radius:9px;font-size:12.5px;font-weight:700;padding:8px 12px;min-height:36px}
+  .small-btn.danger{color:#FF9A9A;border-color:#5A2A2A;background:var(--red-dark)}
+
+  .status-line{font-size:13px;color:var(--muted);line-height:1.6;padding:6px 2px}
+  .status-line.err{color:#FFB3B3}
+  .spinner{width:16px;height:16px;border-radius:50%;border:2.5px solid var(--line2);border-top-color:var(--amber);display:inline-block;vertical-align:-3px;margin-right:8px;animation:spin .7s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  @media(prefers-reduced-motion:reduce){.spinner{animation:none}}
+
+  .item{display:flex;gap:11px;padding:10px;border:1.5px solid var(--line);border-radius:12px;background:var(--bg2);margin-bottom:9px;align-items:flex-start}
+  .item.playing{border-color:var(--amber);background:#1D1808}
+  .item img{width:104px;height:59px;object-fit:cover;border-radius:8px;flex:none;background:#000}
+  @media(max-width:420px){.item img{width:84px;height:48px}}
+  .item-main{flex:1;min-width:0}
+  .item-title{font-size:13.5px;font-weight:700;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere}
+  .item-meta{font-size:12px;color:var(--muted);margin-top:3px;display:flex;gap:8px;flex-wrap:wrap}
+  .item-actions{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+  .mini{border:1.5px solid var(--line2);background:var(--panel2);color:var(--text);border-radius:8px;font-size:12px;font-weight:700;padding:6px 10px;min-height:32px;display:inline-flex;align-items:center;gap:5px}
+  .mini.primary{background:var(--amber);border-color:var(--amber);color:#171106}
+  .mini.fav-on{color:var(--amber);border-color:#6B4E12;background:#2B1E07}
+  .mini.icon-only{padding:6px 8px;min-width:44px;min-height:44px;justify-content:center}
+  .mini:disabled{opacity:.38;cursor:not-allowed}
+  .empty{border:1.5px dashed var(--line2);border-radius:12px;padding:22px 16px;text-align:center;color:var(--muted);font-size:13.5px;line-height:1.6}
+  .empty strong{color:var(--text);display:block;font-size:14.5px;margin-bottom:4px}
+
+  footer{margin-top:26px;font-size:12.5px;color:var(--muted2);line-height:1.7}
+  footer .keys{display:flex;flex-wrap:wrap;gap:6px 16px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- SEARCH -->
+  <div class="topbar">
+    <div class="brand">
+      <div class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+      </div>
+      <div>
+        <h1>Web Karaoke</h1>
+        <p>Karaoke pribadi dari YouTube</p>
+      </div>
+    </div>
+    <form class="searchbar" id="search-form">
+      <div class="field">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#A8A29A" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.8-3.8"/></svg>
+        <input type="text" id="search-input" placeholder="Cari lagu… contoh: Dewa 19 Kangen" autocomplete="off" enterkeyhint="search" />
+      </div>
+      <button type="submit" class="btn btn-primary" id="search-btn">Cari</button>
+    </form>
+  </div>
+
+  <div class="options-row">
+    <label class="switch">
+      <input type="checkbox" id="karaoke-toggle" checked />
+      <span class="track" aria-hidden="true"></span>
+      <span>Otomatis tambah kata “karaoke”</span>
+    </label>
+    <span class="health" id="search-health" role="status"><span class="dot" aria-hidden="true"></span><span id="search-health-text">Pencarian: mengecek…</span></span>
+    <span class="hint">Pintasan keyboard: <kbd>Spasi</kbd> putar/jeda · <kbd>N</kbd> berikutnya · <kbd>P</kbd> sebelumnya · <kbd>M</kbd> bisu</span>
+  </div>
+
+  <div class="layout">
+    <!-- LEFT: STAGE -->
+    <div>
+      <div class="stage">
+        <div class="stage-frame">
+          <div id="yt-holder"></div>
+          <iframe id="fallback-frame" title="Pemutar video cadangan" style="display:none" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>
+          <div class="stage-empty" id="stage-empty">
+            <div class="big" aria-hidden="true">🎤</div>
+            <strong>Belum ada lagu yang diputar</strong>
+            <p>Cari lagu di atas, lalu tekan Putar. Atau tempel link YouTube di kolom bawah panggung.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="notice" id="notice" role="status"></div>
+
+      <div class="now">
+        <div class="now-label">Sedang diputar</div>
+        <h2 id="now-title">—</h2>
+        <p class="channel" id="now-channel">Pilih lagu untuk mulai bernyanyi.</p>
+        <div class="now-actions">
+          <button class="btn btn-fav" id="now-fav-btn" disabled>☆ Simpan ke Favorit</button>
+          <button class="btn btn-ghost" id="now-queue-btn" disabled>+ Antrean</button>
+          <button class="btn btn-ghost" id="now-open-yt" disabled>Buka di YouTube ↗</button>
+        </div>
+      </div>
+
+      <div class="controls" aria-label="Kontrol pemutar">
+        <div class="controls-main">
+          <button class="ctl" id="btn-prev" title="Sebelumnya (P)" aria-label="Lagu sebelumnya">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 5h2v14H6zM20 5v14L9.5 12z"/></svg>
+          </button>
+          <button class="ctl ctl-play" id="btn-play" title="Putar / Jeda (Spasi)" aria-label="Putar atau jeda">
+            <svg id="icon-play" viewBox="0 0 24 24" fill="currentColor"><path d="M7 4.5v15l13-7.5z"/></svg>
+            <svg id="icon-pause" viewBox="0 0 24 24" fill="currentColor" style="display:none"><path d="M6 4h4v16H6zM14 4h4v16h-4z"/></svg>
+          </button>
+          <button class="ctl" id="btn-next" title="Berikutnya (N)" aria-label="Lagu berikutnya">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 5h2v14h-2zM4 5v14l10.5-7z"/></svg>
+          </button>
+          <button class="ctl" id="btn-mute" title="Bisu (M)" aria-label="Bisu atau bunyikan">
+            <svg id="icon-vol" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H3v6h3l5 4z" fill="currentColor" stroke="none"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.4 5.6a9 9 0 0 1 0 12.8"/></svg>
+            <svg id="icon-mute" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M11 5 6 9H3v6h3l5 4z" fill="currentColor" stroke="none"/><path d="m16 9 6 6M22 9l-6 6"/></svg>
+          </button>
+          <div class="vol">
+            <label for="vol-slider">Volume</label>
+            <input type="range" id="vol-slider" min="0" max="100" value="80" />
+          </div>
+        </div>
+        <div class="progress-row">
+          <span class="t" id="time-cur">0:00</span>
+          <input type="range" id="seek-slider" min="0" max="1000" value="0" aria-label="Geser posisi lagu" />
+          <span class="t" id="time-dur">0:00</span>
+        </div>
+        <div class="queue-status" id="queue-status">Antrean kosong.</div>
+      </div>
+
+      <div class="box">
+        <h3>Putar dari link YouTube</h3>
+        <p class="desc">Tempel link video atau ID video (11 karakter) kalau pencarian lagi bermasalah, atau lagunya sudah kamu tahu.</p>
+        <form class="link-row" id="link-form">
+          <input type="text" id="link-input" placeholder="https://www.youtube.com/watch?v=… atau dQw4w9WgXcQ" autocomplete="off" />
+          <button type="submit" class="btn btn-primary">Putar</button>
+          <button type="button" class="btn" id="link-queue-btn">+ Antrean</button>
+        </form>
+      </div>
+
+      <div class="box">
+        <h3>Mikrofon + gema (reverb)</h3>
+        <p class="desc">Suaramu dari mic dicampur gema ringan lalu keluar ke speaker/headset, barengan sama musik. Mati secara bawaan — nyalakan hanya saat mau nyanyi.</p>
+        <div class="mic-row">
+          <button class="mic-btn" id="mic-btn" aria-pressed="false"><span class="dot"></span><span id="mic-btn-label">Mic mati — nyalakan</span></button>
+          <div class="slider-group">
+            <label for="mic-vol">Volume mic</label>
+            <input type="range" id="mic-vol" min="0" max="150" value="90" />
+          </div>
+          <div class="slider-group">
+            <label for="mic-reverb">Gema</label>
+            <input type="range" id="mic-reverb" min="0" max="100" value="35" />
+          </div>
+        </div>
+        <div class="warn-text">⚠️ <strong>Waspada feedback:</strong> kalau mic dekat speaker, suara bisa berputar jadi denging/teriakan keras. Pakai headset lebih aman, atau jauhkan mic dari speaker dan kecilkan volume mic dulu sebelum menaikkan perlahan. Fitur mic butuh koneksi HTTPS dan izin mikrofon dari browser.</div>
+        <div class="notice" id="mic-notice" role="status"></div>
+      </div>
+
+      <footer>
+        <div class="keys">
+          <span>Pencarian lagu memakai backend GAS (Innertube, tanpa kunci API) sebagai jalur utama — kalau backend bermasalah, otomatis dicoba server publik Invidious sebagai cadangan.</span>
+        </div>
+        <div style="margin-top:6px">Favorit, riwayat, dan antrean tersimpan di browser perangkat ini saja.</div>
+      </footer>
+    </div>
+
+    <!-- RIGHT: PANEL -->
+    <aside class="panel" aria-label="Panel lagu">
+      <div class="tabs" role="tablist">
+        <button class="tab active" data-tab="results" role="tab">Hasil Cari<span class="count" id="count-results">0</span></button>
+        <button class="tab" data-tab="queue" role="tab">Antrean<span class="count" id="count-queue">0</span></button>
+        <button class="tab" data-tab="favs" role="tab">Favorit<span class="count" id="count-favs">0</span></button>
+        <button class="tab" data-tab="history" role="tab">Riwayat<span class="count" id="count-history">0</span></button>
+      </div>
+      <div class="tab-body">
+        <div id="pane-results">
+          <div id="results-status" class="status-line">Hasil pencarian muncul di sini. Coba cari: <em>“Sheila On 7 Dan”</em>, <em>“Peterpan Ada Apa Denganmu”</em>, atau <em>“lagu dangdut koplo”</em>.</div>
+          <div id="results-list"></div>
+        </div>
+        <div id="pane-queue" style="display:none">
+          <div class="tab-toolbar">
+            <span class="hint" id="queue-hint">Lagu berikutnya main otomatis.</span>
+            <span class="spacer"></span>
+            <button class="small-btn danger" id="clear-queue-btn">Bersihkan antrean</button>
+          </div>
+          <div id="queue-list"></div>
+        </div>
+        <div id="pane-favs" style="display:none">
+          <div id="favs-list"></div>
+        </div>
+        <div id="pane-history" style="display:none">
+          <div class="tab-toolbar">
+            <span class="hint">Lagu yang pernah diputar di perangkat ini.</span>
+            <span class="spacer"></span>
+            <button class="small-btn danger" id="clear-history-btn">Hapus riwayat</button>
+          </div>
+          <div id="history-list"></div>
+        </div>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<script>
+(function(){
+"use strict";
+
+/* ================= DATA & STORAGE ================= */
+var LS = { favs:"wk_favs_v1", hist:"wk_hist_v1", queue:"wk_queue_v1", current:"wk_current_v1", karaoke:"wk_karaoke_toggle_v1" };
+function loadJSON(key, fallback){
+  try{ var v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; }catch(e){ return fallback; }
+}
+function saveJSON(key, val){
+  try{ localStorage.setItem(key, JSON.stringify(val)); }catch(e){}
+}
+var favorites = loadJSON(LS.favs, []);
+var historyList = loadJSON(LS.hist, []);
+var queue = loadJSON(LS.queue, []);
+var current = loadJSON(LS.current, null); // {videoId,title,author}
+var currentIndex = -1; // index inside queue, -1 = playing outside queue
+if(current){
+  currentIndex = queue.findIndex(function(q){ return q.videoId === current.videoId; });
+}
+
+/* ================= HELPERS ================= */
+function $(id){ return document.getElementById(id); }
+function esc(s){
+  return String(s == null ? "" : s).replace(/[&<>"']/g, function(c){
+    return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];
+  });
+}
+function fmtDur(sec){
+  sec = Math.max(0, Math.floor(sec || 0));
+  var m = Math.floor(sec/60), s = sec % 60;
+  return m + ":" + (s < 10 ? "0" : "") + s;
+}
+function thumb(id){ return "https://i.ytimg.com/vi/" + id + "/hqdefault.jpg"; }
+function isFav(id){ return favorites.some(function(f){ return f.videoId === id; }); }
+function extractVideoId(text){
+  if(!text) return null;
+  text = text.trim();
+  if(/^[A-Za-z0-9_-]{11}$/.test(text)) return text;
+  var m = text.match(/[?&]v=([A-Za-z0-9_-]{11})/) || text.match(/youtu\.be\/([A-Za-z0-9_-]{11})/) || text.match(/\/(?:shorts|embed|live)\/([A-Za-z0-9_-]{11})/);
+  return m ? m[1] : null;
+}
+
+var noticeTimer = null;
+function showNotice(msg, type, sticky){
+  var el = $("notice");
+  el.innerHTML = msg;
+  el.className = "notice show " + (type || "warn");
+  if(noticeTimer) clearTimeout(noticeTimer);
+  if(!sticky){
+    noticeTimer = setTimeout(function(){ el.className = "notice"; }, 7000);
+  }
+}
+function hideNotice(){ $("notice").className = "notice"; }
+
+/* ================= YOUTUBE PLAYER ================= */
+var player = null, playerReady = false, isPlaying = false, pendingVideo = null;
+var progressTimer = null;
+var pendingPoll = null;
+
+/* The IFrame API script is loaded dynamically so a blocked or failed
+   script (adblocker, filtered network, captive portal) is detected
+   instead of silently leaving a dead stage. If it never becomes ready,
+   playback falls back to a plain embed iframe that needs no API script. */
+var apiState = "loading"; // loading | ready | failed
+var apiRetryDone = false;
+var fallbackActive = false;
+
+function loadYouTubeAPI(){
+  var s = document.createElement("script");
+  s.src = "https://www.youtube.com/iframe_api";
+  s.async = true;
+  s.onerror = function(){
+    if(!apiRetryDone){ apiRetryDone = true; setTimeout(loadYouTubeAPI, 1500); }
+    else if(apiState === "loading"){ apiState = "failed"; }
+  };
+  document.head.appendChild(s);
+}
+setTimeout(function(){ if(apiState === "loading" && !playerReady) apiState = "failed"; }, 9000);
+loadYouTubeAPI();
+
+/* ---- fallback: plain embed iframe ---- */
+function playViaFallback(id){
+  fallbackActive = true;
+  var f = $("fallback-frame");
+  f.src = "https://www.youtube-nocookie.com/embed/" + encodeURIComponent(id) + "?autoplay=1&rel=0&playsinline=1";
+  f.style.display = "block";
+  $("seek-slider").disabled = true;
+  $("vol-slider").disabled = true;
+  setPlayingUI(true);
+  showNotice("Pemutar utama YouTube tidak merespons di jaringan ini — memakai pemutar cadangan. Kalau video belum jalan, tekan tombol play di dalam video. Tombol Berikutnya/Sebelumnya tetap bisa dipakai; geser posisi & volume halaman ini nonaktif di mode cadangan.", "warn");
+}
+function stopFallback(){
+  if(!fallbackActive) return;
+  fallbackActive = false;
+  var f = $("fallback-frame");
+  f.style.display = "none";
+  f.removeAttribute("src");
+  $("seek-slider").disabled = false;
+  $("vol-slider").disabled = false;
+}
+
+window.onYouTubeIframeAPIReady = function(){
+  var vars = { autoplay: 0, rel: 0, playsinline: 1, modestbranding: 1, iv_load_policy: 3 };
+  if(location.origin && location.origin.indexOf("http") === 0) vars.origin = location.origin;
+  player = new YT.Player("yt-holder", {
+    width: "100%", height: "100%",
+    playerVars: vars,
+    events: {
+      onReady: function(){
+        playerReady = true;
+        apiState = "ready";
+        try{ player.setVolume(parseInt($("vol-slider").value, 10)); }catch(e){}
+        if(pendingVideo){ var v = pendingVideo; pendingVideo = null; stopFallback(); player.loadVideoById(v); }
+        else if(current && !fallbackActive){ player.cueVideoById(current.videoId); setPlayingUI(false); }
+        startProgressLoop();
+      },
+      onStateChange: function(e){
+        if(e.data === YT.PlayerState.PLAYING){ setPlayingUI(true); }
+        else if(e.data === YT.PlayerState.PAUSED){ setPlayingUI(false); }
+        else if(e.data === YT.PlayerState.ENDED){ setPlayingUI(false); playNext(true); }
+      },
+      onError: function(e){
+        var code = e && e.data;
+        if(code === 101 || code === 150){
+          showNotice("Video ini tidak boleh diputar di luar YouTube oleh pemiliknya — loncat ke lagu berikutnya di antrean.", "warn");
+          setTimeout(function(){ playNext(false); }, 1200);
+        } else if(code === 100){
+          showNotice("Video tidak ditemukan atau sudah dihapus — loncat ke lagu berikutnya.", "warn");
+          setTimeout(function(){ playNext(false); }, 1200);
+        } else if(code === 153){
+          showNotice("Video tidak tersedia (kode 153) — kemungkinan videonya sudah dihapus atau di-private pemiliknya. Coba lagu lain.", "err");
+        } else {
+          showNotice("Pemutar bermasalah (kode " + esc(code) + "). Coba lagu lain atau tempel link langsung.", "err");
+        }
+      }
+    }
+  });
+};
+
+function setPlayingUI(playing){
+  isPlaying = playing;
+  $("icon-play").style.display = playing ? "none" : "block";
+  $("icon-pause").style.display = playing ? "block" : "none";
+}
+
+function startProgressLoop(){
+  if(progressTimer) return;
+  progressTimer = setInterval(function(){
+    if(!player || !playerReady || typeof player.getCurrentTime !== "function") return;
+    try{
+      var cur = player.getCurrentTime() || 0;
+      var dur = player.getDuration() || 0;
+      $("time-cur").textContent = fmtDur(cur);
+      $("time-dur").textContent = fmtDur(dur);
+      var slider = $("seek-slider");
+      if(document.activeElement !== slider && dur > 0){
+        slider.value = Math.round(cur / dur * 1000);
+      }
+    }catch(e){}
+  }, 500);
+}
+
+/* ================= PLAYBACK CORE ================= */
+function playVideo(item, queueIndex){
+  if(!item || !item.videoId) return;
+  current = { videoId: item.videoId, title: item.title || "Tanpa judul", author: item.author || "", lengthSeconds: item.lengthSeconds || 0, thumb: item.thumb || "" };
+  currentIndex = (typeof queueIndex === "number") ? queueIndex : queue.findIndex(function(q){ return q.videoId === item.videoId; });
+  saveJSON(LS.current, current);
+  addToHistory(current);
+  updateNowUI();
+  renderAll();
+  $("stage-empty").style.display = "none";
+  hideNotice();
+  if(playerReady && player){
+    stopFallback();
+    player.loadVideoById(item.videoId);
+  } else if(apiState === "failed"){
+    playViaFallback(item.videoId);
+  } else {
+    pendingVideo = item.videoId;
+    // API script may still be loading; poll briefly, then fall back to the plain embed
+    if(pendingPoll) clearInterval(pendingPoll);
+    var tries = 0;
+    pendingPoll = setInterval(function(){
+      tries++;
+      if(playerReady && player){
+        pendingVideo = null; clearInterval(pendingPoll); pendingPoll = null;
+        stopFallback(); player.loadVideoById(item.videoId);
+      } else if(apiState === "failed" || tries > 20){
+        pendingVideo = null; clearInterval(pendingPoll); pendingPoll = null;
+        playViaFallback(item.videoId);
+      }
+    }, 300);
+  }
+}
+
+function playNext(fromEnded){
+  if(queue.length === 0){
+    if(fromEnded) showNotice("Antrean habis. Cari lagu berikutnya yuk.", "ok");
+    return;
+  }
+  var next = currentIndex + 1;
+  if(next >= queue.length){
+    if(fromEnded){ showNotice("Antrean selesai — semua lagu sudah diputar.", "ok"); return; }
+    next = 0;
+  }
+  playVideo(queue[next], next);
+}
+function playPrev(){
+  if(queue.length === 0) return;
+  var prev = currentIndex - 1;
+  if(prev < 0) prev = queue.length - 1;
+  playVideo(queue[prev], prev);
+}
+
+function addToHistory(item){
+  historyList = historyList.filter(function(h){ return h.videoId !== item.videoId; });
+  historyList.unshift({ videoId: item.videoId, title: item.title, author: item.author, lengthSeconds: item.lengthSeconds || 0, thumb: item.thumb || "", at: Date.now() });
+  if(historyList.length > 60) historyList = historyList.slice(0, 60);
+  saveJSON(LS.hist, historyList);
+}
+
+function updateNowUI(){
+  if(current){
+    $("now-title").textContent = current.title;
+    $("now-channel").textContent = current.author ? ("Channel: " + current.author) : "Diputar dari link langsung.";
+    $("now-fav-btn").disabled = false;
+    $("now-queue-btn").disabled = false;
+    $("now-open-yt").disabled = false;
+    syncNowFavBtn();
+  }
+  updateQueueStatus();
+}
+function syncNowFavBtn(){
+  var btn = $("now-fav-btn");
+  if(current && isFav(current.videoId)){
+    btn.textContent = "★ Sudah di Favorit — ketuk untuk hapus";
+    btn.classList.add("active");
+  } else {
+    btn.textContent = "☆ Simpan ke Favorit";
+    btn.classList.remove("active");
+  }
+}
+function updateQueueStatus(){
+  var el = $("queue-status");
+  if(queue.length === 0){ el.textContent = "Antrean kosong."; return; }
+  if(currentIndex >= 0){
+    el.textContent = "Antrean: lagu ke-" + (currentIndex + 1) + " dari " + queue.length + ". Berikutnya main otomatis setelah lagu selesai.";
+  } else {
+    el.textContent = "Antrean berisi " + queue.length + " lagu.";
+  }
+}
+
+/* ================= QUEUE / FAV ACTIONS ================= */
+function addToQueue(item, silent){
+  if(!item || !item.videoId) return;
+  if(queue.some(function(q){ return q.videoId === item.videoId; })){
+    if(!silent) showNotice("Lagu itu sudah ada di antrean.", "warn");
+    return;
+  }
+  queue.push({ videoId: item.videoId, title: item.title || "Tanpa judul", author: item.author || "", lengthSeconds: item.lengthSeconds || 0, thumb: item.thumb || "" });
+  saveJSON(LS.queue, queue);
+  if(!silent) showNotice("Ditambahkan ke antrean: <strong>" + esc(item.title || "") + "</strong>", "ok");
+  renderAll();
+}
+function removeFromQueue(idx){
+  var wasCurrent = (idx === currentIndex);
+  queue.splice(idx, 1);
+  if(idx < currentIndex) currentIndex--;
+  if(wasCurrent) currentIndex = -1;
+  saveJSON(LS.queue, queue);
+  renderAll();
+}
+function moveQueue(idx, dir){
+  var target = idx + dir;
+  if(target < 0 || target >= queue.length) return;
+  var tmp = queue[idx]; queue[idx] = queue[target]; queue[target] = tmp;
+  if(currentIndex === idx) currentIndex = target;
+  else if(currentIndex === target) currentIndex = idx;
+  saveJSON(LS.queue, queue);
+  renderAll();
+}
+function toggleFav(item){
+  if(!item || !item.videoId) return;
+  if(isFav(item.videoId)){
+    favorites = favorites.filter(function(f){ return f.videoId !== item.videoId; });
+  } else {
+    favorites.unshift({ videoId: item.videoId, title: item.title || "Tanpa judul", author: item.author || "", lengthSeconds: item.lengthSeconds || 0, thumb: item.thumb || "" });
+  }
+  saveJSON(LS.favs, favorites);
+  syncNowFavBtn();
+  renderAll();
+}
+
+/* ================= RENDERING ================= */
+function itemHTML(item, opts){
+  opts = opts || {};
+  var fav = isFav(item.videoId);
+  var meta = "";
+  if(item.author) meta += "<span>" + esc(item.author) + "</span>";
+  if(item.lengthSeconds) meta += "<span>" + fmtDur(item.lengthSeconds) + "</span>";
+  if(opts.extraMeta) meta += opts.extraMeta;
+  var h = "";
+  h += '<div class="item' + (opts.playing ? " playing" : "") + '">';
+  h += '<img src="' + esc(item.thumb ? item.thumb : thumb(item.videoId)) + '" alt="" loading="lazy" onerror="this.style.visibility=\'hidden\'">';
+  h += '<div class="item-main">';
+  h += '<div class="item-title">' + esc(item.title || "Tanpa judul") + "</div>";
+  if(meta) h += '<div class="item-meta">' + meta + "</div>";
+  h += '<div class="item-actions">';
+  h += '<button class="mini primary" data-act="play">▶ Putar</button>';
+  if(!opts.hideQueue) h += '<button class="mini" data-act="queue">+ Antrean</button>';
+  h += '<button class="mini' + (fav ? " fav-on" : "") + '" data-act="fav">' + (fav ? "★ Favorit" : "☆ Favorit") + "</button>";
+  if(opts.queueControls){
+    h += '<button class="mini icon-only" data-act="up" aria-label="Naikkan di antrean"' + (opts.isFirst ? " disabled" : "") + '>↑</button>';
+    h += '<button class="mini icon-only" data-act="down" aria-label="Turunkan di antrean"' + (opts.isLast ? " disabled" : "") + '>↓</button>';
+    h += '<button class="mini icon-only" data-act="remove" aria-label="Hapus dari antrean">✕</button>';
+  }
+  if(opts.removeFav) h += '<button class="mini icon-only" data-act="remove" aria-label="Hapus">✕</button>';
+  h += "</div></div></div>";
+  return h;
+}
+
+function bindList(container, list, optsFor){
+  // event delegation, bound once per container via dataset flag
+  if(container.dataset.bound) return;
+  container.dataset.bound = "1";
+  container.addEventListener("click", function(e){
+    var btn = e.target.closest("button[data-act]");
+    if(!btn) return;
+    var itemEl = btn.closest(".item");
+    if(!itemEl) return;
+    var idx = parseInt(itemEl.dataset.idx, 10);
+    var list = window.__wkLists[container.id];
+    if(!list || !list[idx]) return;
+    var item = list[idx];
+    var act = btn.dataset.act;
+    if(act === "play"){
+      var qi = queue.findIndex(function(q){ return q.videoId === item.videoId; });
+      playVideo(item, qi >= 0 ? qi : -1);
+    } else if(act === "queue"){ addToQueue(item); }
+    else if(act === "fav"){ toggleFav(item); }
+    else if(act === "remove"){
+      if(container.id === "queue-list") removeFromQueue(idx);
+      else if(container.id === "favs-list") toggleFav(item);
+      else if(container.id === "history-list"){
+        historyList.splice(idx, 1); saveJSON(LS.hist, historyList); renderAll();
+      }
+    }
+    else if(act === "up"){ moveQueue(idx, -1); }
+    else if(act === "down"){ moveQueue(idx, 1); }
+  });
+}
+window.__wkLists = {};
+
+function renderList(containerId, list, emptyHTML, optsFn){
+  var container = $(containerId);
+  window.__wkLists[containerId] = list;
+  if(!list || list.length === 0){ container.innerHTML = emptyHTML; return; }
+  var h = "";
+  list.forEach(function(item, i){
+    var opts = optsFn ? optsFn(item, i) : {};
+    var tmp = itemHTML(item, opts);
+    // inject data-idx
+    tmp = tmp.replace('<div class="item', '<div data-idx="' + i + '" class="item');
+    h += tmp;
+  });
+  container.innerHTML = h;
+}
+
+var lastResults = [];
+var resultsSearched = false; // true once a search has completed (even with 0 hits)
+function renderAll(){
+  $("count-results").textContent = lastResults.length;
+  $("count-queue").textContent = queue.length;
+  $("count-favs").textContent = favorites.length;
+  $("count-history").textContent = historyList.length;
+
+  renderList("results-list", lastResults,
+    resultsSearched
+      ? '<div class="empty"><strong>Tidak ditemukan lagu yang cocok</strong>Coba kata kunci lain — misalnya nama penyanyi + judul lagu.</div>'
+      : '<div class="empty"><strong>Belum ada hasil</strong>Cari lagu dulu lewat kolom pencarian di atas.</div>',
+    function(item){ return {}; });
+
+  renderList("queue-list", queue,
+    '<div class="empty"><strong>Antrean kosong</strong>Tambahkan lagu dari hasil cari, favorit, atau riwayat — lagu berikutnya akan main otomatis.</div>',
+    function(item, i){ return { queueControls: true, hideQueue: true, playing: current && i === currentIndex, isFirst: i === 0, isLast: i === queue.length - 1 }; });
+
+  renderList("favs-list", favorites,
+    '<div class="empty"><strong>Belum ada favorit</strong>Tekan ☆ Favorit di lagu mana pun buat menyimpannya di sini.</div>',
+    function(item){ return { removeFav: true }; });
+
+  renderList("history-list", historyList,
+    '<div class="empty"><strong>Riwayat masih kosong</strong>Lagu yang kamu putar akan tercatat di sini.</div>',
+    function(item){ return { removeFav: true }; });
+
+  ["results-list","queue-list","favs-list","history-list"].forEach(function(id){ bindList($(id)); });
+  updateQueueStatus();
+}
+
+/* ================= TABS ================= */
+document.querySelectorAll(".tab").forEach(function(tab){
+  tab.addEventListener("click", function(){
+    document.querySelectorAll(".tab").forEach(function(t){ t.classList.remove("active"); });
+    tab.classList.add("active");
+    ["results","queue","favs","history"].forEach(function(name){
+      $("pane-" + name).style.display = (name === tab.dataset.tab) ? "block" : "none";
+    });
+  });
+});
+function switchTab(name){
+  var tab = document.querySelector('.tab[data-tab="' + name + '"]');
+  if(tab) tab.click();
+}
+
+/* ================= SEARCH (GAS PRIMARY + INVIDIOUS FALLBACK) ================= */
+var GAS_BASE = "https://script.google.com/macros/s/AKfycbx3JVzh18-BIkKqsv55Op35iS-WKPLh4L6ocJg-XHMZzlUA2SjDoM_m7YjJCHGobKKz/exec";
+var GAS_SEARCH_TIMEOUT = 8000;
+var GAS_PING_TIMEOUT = 8000;
+var INSTANCES = [
+  "https://invidious.nerdvpn.de",
+  "https://yt.artemislena.eu",
+  "https://inv.tux.pizza",
+  "https://iv.melmac.space",
+  "https://invidious.0011.lt",
+  "https://inv.nadeko.net",
+  "https://inv.us.projectsegfau.lt"
+];
+var workingInstance = null;
+
+function fetchWithTimeout(url, ms){
+  var ctrl = new AbortController();
+  var t = setTimeout(function(){ ctrl.abort(); }, ms);
+  return fetch(url, { signal: ctrl.signal }).then(function(r){
+    clearTimeout(t);
+    if(!r.ok) throw new Error("HTTP " + r.status);
+    return r.json();
+  }).catch(function(e){ clearTimeout(t); throw e; });
+}
+
+var SEARCH_TIMEOUT = 4000;
+
+/* Try instances one by one (working instance first), reporting progress
+   as (currentAttempt, totalAttempts) so the UI never sits silent. */
+function tryInstances(path, timeoutMs, validate, onProgress){
+  var order = INSTANCES.slice();
+  if(workingInstance){
+    order = [workingInstance].concat(order.filter(function(x){ return x !== workingInstance; }));
+  }
+  function attempt(i){
+    if(i >= order.length) return Promise.reject(new Error("all instances failed"));
+    if(onProgress) onProgress(i + 1, order.length);
+    return fetchWithTimeout(order[i] + path, timeoutMs).then(function(data){
+      if(validate && !validate(data)) throw new Error("Respons tidak dikenal");
+      workingInstance = order[i];
+      return data;
+    }).catch(function(){ return attempt(i + 1); });
+  }
+  return attempt(0);
+}
+
+function searchInvidious(query, onProgress){
+  return tryInstances("/api/v1/search?q=" + encodeURIComponent(query) + "&type=video", SEARCH_TIMEOUT,
+    function(d){ return Array.isArray(d); }, onProgress);
+}
+
+function parseDurationStr(val){
+  if(typeof val === "number") return Math.floor(val) || 0;
+  if(!val) return 0;
+  var parts = String(val).trim().split(":").map(function(p){ return parseInt(p, 10); });
+  if(parts.some(function(n){ return isNaN(n); })) return 0;
+  var sec = 0;
+  for(var i = 0; i < parts.length; i++){ sec = sec * 60 + parts[i]; }
+  return sec;
+}
+
+function pingGAS(){
+  return fetchWithTimeout(GAS_BASE + "?action=ping", GAS_PING_TIMEOUT).then(function(d){
+    if(!d || d.ok !== true) throw new Error("ping failed");
+    return true;
+  });
+}
+
+function searchGAS(query){
+  return fetchWithTimeout(GAS_BASE + "?action=search&q=" + encodeURIComponent(query), GAS_SEARCH_TIMEOUT).then(function(d){
+    if(!d || d.ok !== true || !Array.isArray(d.results)) throw new Error("GAS search failed");
+    return d.results.filter(function(v){ return v && v.id; }).slice(0, 25).map(function(v){
+      return { videoId: v.id, title: v.title || "Tanpa judul", author: v.channel || "", lengthSeconds: parseDurationStr(v.duration), thumb: v.thumb || "" };
+    });
+  });
+}
+
+/* GAS langsung ditembak; Invidious hanya jadi cadangan kalau GAS gagal.
+   Indikator kesehatan dihitung dari ping ringan saat halaman dibuka dan
+   dari hasil pencarian terakhir — tidak memblokir pencarian.
+   onProgress dipanggil per fase ("gas" lalu "invidious") supaya UI bisa
+   menunjukkan progres selama fase GAS juga, bukan cuma saat fallback. */
+function searchWithFallback(query, onProgress){
+  if(onProgress) onProgress("gas", 0, 0);
+  return searchGAS(query).catch(function(){
+    return searchInvidious(query, function(n, total){
+      if(onProgress) onProgress("invidious", n, total);
+    });
+  });
+}
+
+/* ---- search health indicator ---- */
+function setHealth(state, text){
+  var el = $("search-health");
+  el.className = "health" + (state ? " " + state : "");
+  $("search-health-text").textContent = text;
+}
+function checkSearchHealth(){
+  setHealth("", "Pencarian: mengecek server…");
+  pingGAS()
+    .then(function(){ setHealth("on", "Pencarian: online"); })
+    .catch(function(){ setHealth("off", "Pencarian: offline — pakai kolom tempel link di bawah panggung"); });
+}
+
+var searching = false;
+function doSearch(){
+  var raw = $("search-input").value.trim();
+  if(!raw || searching) return;
+  var addKaraoke = $("karaoke-toggle").checked;
+  var q = raw;
+  if(addKaraoke && !/karaoke/i.test(raw)) q = raw + " karaoke";
+  searching = true;
+  $("search-btn").disabled = true;
+  $("search-btn").textContent = "Mencari…";
+  $("results-status").className = "status-line";
+  $("results-status").innerHTML = '<span class="spinner"></span>Mencari “' + esc(q) + '”…';
+  $("results-list").innerHTML = "";
+  switchTab("results");
+  // Di HP panel hasil ada jauh di bawah panggung — gulir ke sana supaya
+  // proses cari (dan hasilnya) terlihat, bukan terkesan macet.
+  if(window.innerWidth < 1020){
+    var reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    setTimeout(function(){
+      $("pane-results").scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "start" });
+    }, 60);
+  }
+
+  /* Progres pencarian: fase + detik berjalan, diperbarui tiap detik dan
+     setiap fase berubah — jadi fase GAS yang dulu diam pun terlihat jalan. */
+  var searchPhase = "gas", phaseN = 0, phaseTotal = 0, elapsedSec = 0;
+  function renderSearchProgress(){
+    if(!searching) return;
+    var phaseText = (searchPhase === "gas")
+      ? "menghubungi server utama"
+      : "server utama tak merespons — mencoba server cadangan " + phaseN + " dari " + phaseTotal;
+    $("results-status").innerHTML = '<span class="spinner"></span>Mencari “' + esc(q) + '” — ' + phaseText + '… (' + elapsedSec + ' dtk)';
+  }
+  renderSearchProgress();
+  var searchTicker = setInterval(function(){ elapsedSec++; renderSearchProgress(); }, 1000);
+
+  searchWithFallback(q, function(phase, n, total){
+    searchPhase = phase; phaseN = n; phaseTotal = total;
+    renderSearchProgress();
+  }).then(function(data){
+    setHealth("on", "Pencarian: online");
+    resultsSearched = true;
+    lastResults = data.filter(function(v){ return v && v.videoId; }).slice(0, 25).map(function(v){
+      return { videoId: v.videoId, title: v.title || "Tanpa judul", author: v.author || "", lengthSeconds: v.lengthSeconds || 0, thumb: v.thumb || "" };
+    });
+    if(lastResults.length === 0){
+      $("results-status").textContent = "Tidak ada hasil untuk “" + q + "”. Coba kata kunci lain, atau tempel link YouTube langsung di bawah panggung.";
+    } else {
+      $("results-status").textContent = lastResults.length + " hasil untuk “" + q + "”. Tekan Putar untuk langsung nyanyi, atau + Antrean buat nanti.";
+    }
+    renderAll();
+  }).catch(function(){
+    lastResults = [];
+    resultsSearched = true;
+    setHealth("off", "Pencarian: offline — pakai kolom tempel link di bawah panggung");
+    $("results-status").className = "status-line err";
+    $("results-status").innerHTML = "Semua server pencarian sedang tidak bisa dihubungi dari jaringanmu. Cek koneksi internet, lalu <button type=\"button\" id=\"retry-search\" style=\"background:none;border:0;color:inherit;text-decoration:underline;font-weight:800;cursor:pointer;padding:0;font-size:inherit\">coba lagi</button>. Jalur lain: <button type=\"button\" id=\"yt-search-btn\" style=\"background:none;border:0;color:inherit;text-decoration:underline;font-weight:800;cursor:pointer;padding:0;font-size:inherit\">Cari di YouTube ↗</button> — buka videonya di tab YouTube, salin link-nya, lalu tempel di kolom “Putar dari link YouTube” di bawah panggung.";
+    var rb = $("retry-search");
+    if(rb) rb.addEventListener("click", doSearch);
+    var yb = $("yt-search-btn");
+    if(yb) yb.addEventListener("click", function(){
+      window.open("https://www.youtube.com/results?search_query=" + encodeURIComponent(q), "_blank", "noopener");
+    });
+    renderAll();
+  }).finally(function(){
+    clearInterval(searchTicker);
+    searching = false;
+    $("search-btn").disabled = false;
+    $("search-btn").textContent = "Cari";
+  });
+}
+$("search-form").addEventListener("submit", function(e){ e.preventDefault(); doSearch(); });
+
+// karaoke toggle persistence
+var savedToggle = loadJSON(LS.karaoke, true);
+$("karaoke-toggle").checked = savedToggle !== false;
+$("karaoke-toggle").addEventListener("change", function(){ saveJSON(LS.karaoke, $("karaoke-toggle").checked); });
+
+/* ================= MANUAL LINK ================= */
+function playFromLink(toQueue){
+  var id = extractVideoId($("link-input").value);
+  if(!id){
+    showNotice("Link/ID tidak dikenali. Tempel link YouTube lengkap atau ID video 11 karakter.", "err");
+    return;
+  }
+  var item = { videoId: id, title: "Video YouTube (" + id + ")", author: "", lengthSeconds: 0, thumb: "" };
+  // Putar / antrekan seketika — jangan tunggu fetch judul (bisa lama kalau
+  // semua server Invidious lambat). Judul asli diambil di latar belakang.
+  if(toQueue){ addToQueue(item); } else { playVideo(item, -1); }
+  fetchTitle(id).then(function(info){
+    if(!info) return;
+    if(current && current.videoId === id){
+      current.title = info.title;
+      current.author = info.author || "";
+      current.lengthSeconds = info.lengthSeconds || 0;
+      saveJSON(LS.current, current);
+    }
+    queue.forEach(function(q){
+      if(q.videoId === id){ q.title = info.title; q.author = info.author || ""; q.lengthSeconds = info.lengthSeconds || 0; }
+    });
+    saveJSON(LS.queue, queue);
+    historyList.forEach(function(h){
+      if(h.videoId === id){ h.title = info.title; h.author = info.author || ""; h.lengthSeconds = info.lengthSeconds || 0; }
+    });
+    saveJSON(LS.hist, historyList);
+    updateNowUI();
+    renderAll();
+  });
+}
+function fetchTitle(id){
+  return tryInstances("/api/v1/videos/" + id, SEARCH_TIMEOUT, function(d){ return !!(d && d.title); }, null)
+    .then(function(d){
+      return { videoId: id, title: d.title, author: d.author || "", lengthSeconds: d.lengthSeconds || 0 };
+    })
+    .catch(function(){ return null; });
+}
+$("link-form").addEventListener("submit", function(e){ e.preventDefault(); playFromLink(false); });
+$("link-queue-btn").addEventListener("click", function(){ playFromLink(true); });
+
+/* ================= CONTROLS ================= */
+$("btn-play").addEventListener("click", togglePlay);
+function togglePlay(){
+  if(fallbackActive){ showNotice("Di mode pemutar cadangan, pakai tombol play/jeda di dalam video.", "warn"); return; }
+  if(!playerReady || !player){ if(current) playVideo(current, currentIndex); return; }
+  try{
+    if(isPlaying) player.pauseVideo(); else player.playVideo();
+  }catch(e){}
+}
+$("btn-next").addEventListener("click", function(){ playNext(false); });
+$("btn-prev").addEventListener("click", playPrev);
+$("btn-mute").addEventListener("click", toggleMute);
+function toggleMute(){
+  if(!playerReady || !player) return;
+  try{
+    if(player.isMuted()){ player.unMute(); $("icon-vol").style.display = "block"; $("icon-mute").style.display = "none"; }
+    else { player.mute(); $("icon-vol").style.display = "none"; $("icon-mute").style.display = "block"; }
+  }catch(e){}
+}
+$("vol-slider").addEventListener("input", function(){
+  if(playerReady && player){ try{ player.setVolume(parseInt(this.value, 10)); }catch(e){} }
+});
+$("seek-slider").addEventListener("change", function(){
+  if(!playerReady || !player) return;
+  try{
+    var dur = player.getDuration() || 0;
+    if(dur > 0) player.seekTo(dur * (parseInt(this.value, 10) / 1000), true);
+  }catch(e){}
+});
+
+$("now-fav-btn").addEventListener("click", function(){ if(current) toggleFav(current); });
+$("now-queue-btn").addEventListener("click", function(){ if(current) addToQueue(current); });
+$("now-open-yt").addEventListener("click", function(){
+  if(current) window.open("https://www.youtube.com/watch?v=" + current.videoId, "_blank", "noopener");
+});
+
+$("clear-queue-btn").addEventListener("click", function(){
+  queue = []; currentIndex = -1; saveJSON(LS.queue, queue); renderAll();
+  showNotice("Antrean dibersihkan. Lagu yang sedang diputar tetap jalan sampai selesai.", "ok");
+});
+$("clear-history-btn").addEventListener("click", function(){
+  historyList = []; saveJSON(LS.hist, historyList); renderAll();
+});
+
+/* keyboard shortcuts */
+document.addEventListener("keydown", function(e){
+  var tag = (e.target && e.target.tagName) || "";
+  if(tag === "INPUT" || tag === "TEXTAREA" || e.target.isContentEditable) return;
+  if(e.code === "Space"){ e.preventDefault(); togglePlay(); }
+  else if(e.key === "n" || e.key === "N"){ playNext(false); }
+  else if(e.key === "p" || e.key === "P"){ playPrev(); }
+  else if(e.key === "m" || e.key === "M"){ toggleMute(); }
+});
+
+/* ================= MIC + REVERB ================= */
+var micStream = null, audioCtx = null, micGain = null, wetGain = null, dryGain = null, micOn = false;
+
+function buildImpulse(ctx, duration, decay){
+  var rate = ctx.sampleRate;
+  var len = rate * duration;
+  var buffer = ctx.createBuffer(2, len, rate);
+  for(var ch = 0; ch < 2; ch++){
+    var data = buffer.getChannelData(ch);
+    for(var i = 0; i < len; i++){
+      data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, decay);
+    }
+  }
+  return buffer;
+}
+
+function showMicNotice(msg, type){
+  var el = $("mic-notice");
+  el.innerHTML = msg;
+  el.className = "notice show " + (type || "warn");
+  el.style.marginTop = "12px";
+}
+
+async function toggleMic(){
+  if(micOn){ stopMic(); return; }
+  if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+    showMicNotice("Browser ini tidak mendukung akses mikrofon, atau halaman tidak dibuka lewat HTTPS.", "err");
+    return;
+  }
+  try{
+    micStream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false } });
+  }catch(e){
+    showMicNotice("Izin mikrofon ditolak atau mic tidak ditemukan. Izinkan akses mic di browser, lalu coba lagi.", "err");
+    return;
+  }
+  try{
+    var AC = window.AudioContext || window.webkitAudioContext;
+    audioCtx = new AC();
+    if(audioCtx.state === "suspended") await audioCtx.resume();
+    var source = audioCtx.createMediaStreamSource(micStream);
+    micGain = audioCtx.createGain();
+    micGain.gain.value = parseInt($("mic-vol").value, 10) / 100;
+    var convolver = audioCtx.createConvolver();
+    convolver.buffer = buildImpulse(audioCtx, 1.8, 2.6);
+    dryGain = audioCtx.createGain();
+    wetGain = audioCtx.createGain();
+    var wet = parseInt($("mic-reverb").value, 10) / 100;
+    dryGain.gain.value = 1 - wet * 0.5;
+    wetGain.gain.value = wet * 0.9;
+    source.connect(micGain);
+    micGain.connect(dryGain); dryGain.connect(audioCtx.destination);
+    micGain.connect(convolver); convolver.connect(wetGain); wetGain.connect(audioCtx.destination);
+    micOn = true;
+    $("mic-btn").classList.add("on");
+    $("mic-btn").setAttribute("aria-pressed", "true");
+    $("mic-btn-label").textContent = "Mic menyala — matikan";
+    showMicNotice("Mic aktif. Kalau terdengar denging, kecilkan volume mic atau jauhkan mic dari speaker.", "ok");
+  }catch(e){
+    stopMicTracks();
+    showMicNotice("Gagal menyalakan pemrosesan audio mic di browser ini.", "err");
+  }
+}
+function stopMicTracks(){
+  if(micStream){ micStream.getTracks().forEach(function(t){ t.stop(); }); micStream = null; }
+}
+function stopMic(){
+  stopMicTracks();
+  if(audioCtx){ try{ audioCtx.close(); }catch(e){} audioCtx = null; }
+  micOn = false;
+  $("mic-btn").classList.remove("on");
+  $("mic-btn").setAttribute("aria-pressed", "false");
+  $("mic-btn-label").textContent = "Mic mati — nyalakan";
+  $("mic-notice").className = "notice";
+}
+$("mic-btn").addEventListener("click", toggleMic);
+$("mic-vol").addEventListener("input", function(){
+  if(micGain && audioCtx) micGain.gain.setTargetAtTime(parseInt(this.value, 10) / 100, audioCtx.currentTime, 0.03);
+});
+$("mic-reverb").addEventListener("input", function(){
+  if(!audioCtx || !wetGain || !dryGain) return;
+  var wet = parseInt(this.value, 10) / 100;
+  wetGain.gain.setTargetAtTime(wet * 0.9, audioCtx.currentTime, 0.03);
+  dryGain.gain.setTargetAtTime(1 - wet * 0.5, audioCtx.currentTime, 0.03);
+});
+
+/* ================= INIT ================= */
+if(current){
+  $("now-title").textContent = current.title;
+  $("stage-empty").style.display = "none";
+  updateNowUI();
+}
+renderAll();
+checkSearchHealth();
+})();
+</script>
+</body>
+</html>
