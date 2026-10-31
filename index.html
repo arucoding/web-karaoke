@@ -17,7 +17,7 @@
     --surface2:#232329;
     --ink:#F4F4F5;
     --muted:#9C9CA6;
-    --faint:#63636E;
+    --faint:#8E8E99;
     --amber:#FFB020;
     --amber-ink:#1A1200;
     --red:#FF5A5A;
@@ -83,6 +83,13 @@
   .stage-empty strong{color:var(--ink);font-size:17px}
   .stage-empty p{margin:0;font-size:13.5px;max-width:420px;line-height:1.55}
 
+  /* ---------- LIRIK SINKRON ---------- */
+  .lyrics{margin-top:16px;text-align:center;padding:0 6px}
+  .lyrics[hidden]{display:none}
+  .lyr-prev,.lyr-next{font-size:14.5px;font-weight:600;color:var(--faint);line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-height:21px;transition:opacity .2s ease}
+  .lyr-active{font-size:clamp(20px,3.2vw,27px);font-weight:800;color:var(--ink);line-height:1.3;margin:3px 0;transition:opacity .2s ease}
+  .lyr-active:empty::after{content:" "}
+
   /* ---------- SEEK ---------- */
   .seek-row{display:flex;align-items:center;gap:12px;margin:12px 2px 0}
   .seek-row .t{font-size:11.5px;color:var(--faint);font-weight:600;font-variant-numeric:tabular-nums;min-width:34px}
@@ -132,6 +139,7 @@
   .autoplay-row .meta .s{color:var(--muted);font-size:13px;font-weight:500;margin-top:1px}
 
   .upnext{text-align:center;font-size:13px;font-weight:500;color:var(--muted);margin:0 0 26px;display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap}
+  #queue-status:empty{display:none}
   .upnext .k{color:var(--amber);font-weight:700}
   .upnext .txt{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
   .skip-inline{flex:none;appearance:none;border:0;border-radius:999px;width:32px;height:32px;display:grid;place-items:center;background:var(--surface2);color:var(--ink)}
@@ -141,7 +149,7 @@
   .autonext[hidden]{display:none}
   .autonext img{flex:none;width:64px;height:48px;object-fit:cover;border-radius:10px;background:#000}
   .autonext .meta{flex:1;min-width:0}
-  .auto-label{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--amber);margin-bottom:2px}
+  .auto-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--amber);margin-bottom:2px}
   .autonext .meta .t{font-weight:600;font-size:14.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .autonext .meta .s{color:var(--muted);font-size:12.5px;font-weight:500;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .skip-btn{flex:none;appearance:none;border:0;border-radius:999px;width:40px;height:40px;display:grid;place-items:center;background:var(--surface2);color:var(--ink)}
@@ -227,9 +235,17 @@
   .foot kbd{font-family:inherit;font-size:11px;background:var(--surface2);border-radius:5px;padding:1px 6px;color:var(--ink);font-weight:700}
   .foot .keys{display:flex;flex-wrap:wrap;gap:6px 16px;margin-bottom:8px}
 
+  .hapus-overlay{position:fixed;inset:0;background:rgba(0,0,0,.72);display:grid;place-items:center;padding:20px;z-index:60}
+  .hapus-overlay[hidden]{display:none}
+  .hapus-box{background:var(--surface);border-radius:16px;padding:20px;max-width:420px;width:100%}
+  .hapus-box p{margin:0 0 18px;font-size:15px;line-height:1.55;font-weight:600}
+  .hapus-actions{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap}
+  .hapus-actions button{border:0;border-radius:999px;font-size:13.5px;font-weight:800;padding:10px 18px;min-height:44px}
+  .hapus-cancel{background:var(--surface2);color:var(--ink)}
+  .hapus-yes{background:var(--red);color:#1A0505}
   @media(prefers-reduced-motion:reduce){
     .spinner{animation:none}
-    .lainnya-head .chev,.switch .track,.switch .track::after,.seg-btn{transition:none}
+    .lainnya-head .chev,.switch .track,.switch .track::after,.seg-btn,.lyr-prev,.lyr-next,.lyr-active{transition:none}
   }
 </style>
 </head>
@@ -274,6 +290,12 @@
             <p>Cari lagu di atas, lalu tekan Putar. Atau tempel link YouTube di bagian “Lainnya” di bawah.</p>
           </div>
         </div>
+      </div>
+
+      <div class="lyrics" id="lyrics" hidden>
+        <div class="lyr-prev" id="lyr-prev"></div>
+        <div class="lyr-active" id="lyr-active"></div>
+        <div class="lyr-next" id="lyr-next"></div>
       </div>
 
       <div class="seek-row">
@@ -443,6 +465,16 @@
   </div>
 </div>
 
+<div class="hapus-overlay" id="hapus-overlay" hidden>
+  <div class="hapus-box" role="alertdialog" aria-modal="true" aria-labelledby="hapus-msg">
+    <p id="hapus-msg"></p>
+    <div class="hapus-actions">
+      <button type="button" class="hapus-cancel" id="hapus-cancel">Batal</button>
+      <button type="button" class="hapus-yes" id="hapus-yes">Hapus</button>
+    </div>
+  </div>
+</div>
+
 <script>
 (function(){
 "use strict";
@@ -528,6 +560,12 @@ loadYouTubeAPI();
 /* ---- fallback: plain embed iframe ---- */
 function playViaFallback(id){
   fallbackActive = true;
+  // Lirik sinkron mati total di mode cadangan: kosongkan baris lirik dan
+  // sembunyikan overlay sepenuhnya. Hasil fetch yang datang belakangan
+  // juga ditolak selama fallbackActive (lihat fetchLyricsFor/setLyrics).
+  lrcLines = [];
+  lrcActiveIdx = -2;
+  hideLyrics();
   var f = $("fallback-frame");
   f.src = "https://www.youtube-nocookie.com/embed/" + encodeURIComponent(id) + "?autoplay=1&rel=0&playsinline=1";
   f.style.display = "block";
@@ -557,7 +595,7 @@ window.onYouTubeIframeAPIReady = function(){
         playerReady = true;
         apiState = "ready";
         try{ player.setVolume(parseInt($("vol-slider").value, 10)); }catch(e){}
-        if(pendingVideo){ var v = pendingVideo; pendingVideo = null; stopFallback(); player.loadVideoById(v); }
+        if(pendingVideo){ var v = pendingVideo; pendingVideo = null; stopFallback(); player.loadVideoById(v); if(current && current.videoId === v) fetchLyricsFor(current); }
         else if(current && !fallbackActive){ player.cueVideoById(current.videoId); setPlayingUI(false); }
         startProgressLoop();
       },
@@ -620,9 +658,13 @@ function playVideo(item, queueIndex){
   hideNotice();
   // Siapkan rekomendasi putar-otomatis di latar belakang selagi lagu jalan
   fetchRecommendations(item.videoId);
+  // Lirik sinkron hanya diambil untuk lagu yang diputar pemutar IFrame
+  // API — di jalur pemutar cadangan lirik tidak aktif sama sekali
+  // (tidak fetch, overlay tidak tampil).
   if(playerReady && player){
     stopFallback();
     player.loadVideoById(item.videoId);
+    fetchLyricsFor(current);
   } else if(apiState === "failed"){
     playViaFallback(item.videoId);
   } else {
@@ -635,6 +677,7 @@ function playVideo(item, queueIndex){
       if(playerReady && player){
         pendingVideo = null; clearInterval(pendingPoll); pendingPoll = null;
         stopFallback(); player.loadVideoById(item.videoId);
+        if(current && current.videoId === item.videoId) fetchLyricsFor(current);
       } else if(apiState === "failed" || tries > 20){
         pendingVideo = null; clearInterval(pendingPoll); pendingPoll = null;
         playViaFallback(item.videoId);
@@ -727,9 +770,7 @@ function updateQueueStatus(){
     if(currentIndex >= 0) rest = queue.length - (currentIndex + 2);
     el.innerHTML = '<span class="k">Berikutnya:</span> <span class="txt">' + esc(nextItem.title || "") + (rest > 0 ? " · " + rest + " lagi" : "") + "</span>";
   } else if(autoplayOn && rec){
-    el.innerHTML = '<span class="k">Berikutnya otomatis:</span> <span class="txt">' + esc(rec.title || "") + '</span><button type="button" class="skip-inline" id="status-skip" aria-label="Lewati rekomendasi ini">' + SKIP_SVG + "</button>";
-    var sb = $("status-skip");
-    if(sb) sb.addEventListener("click", skipRecommendation);
+    el.innerHTML = "";
   } else if(autoplayOn && current){
     if(recUnavailable){
       el.textContent = "Tidak ada rekomendasi yang tersedia.";
@@ -918,6 +959,188 @@ function fetchRecommendations(id){
   return chain;
 }
 
+/* ================= LIRIK SINKRON (LRCLIB) =================
+   Opsional per lagu: ambil lirik LRC dari LRCLIB (gratis, tanpa kunci,
+   CORS terbuka) saat lagu diputar. Kalau tidak ketemu, tidak tampil
+   apa-apa dan tidak ada error — fitur diam-diam nonaktif untuk lagu itu.
+   Hasil (ketemu / tidak ketemu) di-cache di wk_lrc_v1 supaya tiap lagu
+   cuma satu request, sesuai rate limit sopan LRCLIB.
+   Dua aturan keras:
+   - Fitur hanya aktif saat pemutar IFrame API normal yang memutar lagu
+     (ada akses waktu putar). Di mode pemutar cadangan lirik mati total:
+     tidak fetch, overlay disembunyikan penuh.
+   - Maksimal SATU request LRCLIB per lagu per sesi, dengan judul
+     terbaik yang tersedia saat lagu mulai diputar. Tidak ada retry —
+     termasuk saat judul asli lagu dari link baru ketahuan belakangan. */
+var LRC_LS_KEY = "wk_lrc_v1";
+var LRC_TIMEOUT = 8000;
+var lrcCache = loadJSON(LRC_LS_KEY, {});
+var lrcLines = [];        // [{t: detik, text: "..."}] terurut waktu
+var lrcForId = null;
+var lrcActiveIdx = -2;    // -2 = belum pernah dirender
+var lrcAttempted = {};    // videoId: request LRCLIB-nya sudah dikirim sesi ini (maks 1 per lagu)
+var lrcInFlight = {};     // videoId: request LRCLIB-nya sedang berjalan
+var lrcTimer = null;
+
+function cacheLyrics(id, lines){
+  lrcCache[id] = lines; // array baris, atau null = tidak ditemukan
+  var keys = Object.keys(lrcCache);
+  if(keys.length > 120){ // jaga ukuran cache tetap kecil
+    keys.slice(0, keys.length - 80).forEach(function(k){ delete lrcCache[k]; });
+  }
+  saveJSON(LRC_LS_KEY, lrcCache);
+}
+
+/* Heuristik judul video YouTube → {artist, track}:
+   buang segmen kurung berisi karaoke/official/lyric dsb, buang kata
+   "karaoke" lepas, lalu split "Artis - Judul". */
+function parseLyricsQuery(title, author){
+  var t = String(title || "");
+  t = t.replace(/\([^)]*(karaoke|official|lyric|lirik|video|audio|mv)[^)]*\)/gi, " ");
+  t = t.replace(/\[[^\]]*(karaoke|official|lyric|lirik|video|audio|mv)[^\]]*\]/gi, " ");
+  t = t.replace(/\bkaraoke\b/gi, " ");
+  t = t.replace(/\s+/g, " ").trim();
+  t = t.replace(/^[\-–—|•]+\s*/, "").replace(/\s*[\-–—|•]+$/, "").trim();
+  var parts = t.split(/\s+[-–—]\s+/);
+  if(parts.length >= 2 && parts[0].trim() && parts[1].trim()){
+    return { artist: parts[0].trim(), track: parts.slice(1).join(" - ").trim() };
+  }
+  return { artist: String(author || "").trim(), track: t };
+}
+
+/* Parse format LRC: baris "[mm:ss.xx] teks" (satu baris bisa punya
+   beberapa timestamp). Mengembalikan array terurut waktu. */
+function parseLRC(text){
+  var out = [];
+  String(text || "").split(/\r?\n/).forEach(function(raw){
+    var re = /\[(\d{1,3}):(\d{2})(?:[.:](\d{1,3}))?\]/g;
+    var m, times = [], lastEnd = 0;
+    while((m = re.exec(raw)) !== null){
+      var frac = m[3] ? parseFloat("0." + m[3]) : 0;
+      times.push(parseInt(m[1], 10) * 60 + parseInt(m[2], 10) + frac);
+      lastEnd = re.lastIndex;
+    }
+    if(!times.length) return;
+    var txt = raw.slice(lastEnd).trim();
+    times.forEach(function(tt){ out.push({ t: tt, text: txt }); });
+  });
+  out.sort(function(a, b){ return a.t - b.t; });
+  return out;
+}
+
+function hideLyrics(){
+  $("lyrics").hidden = true;
+  $("lyr-prev").textContent = "";
+  $("lyr-active").textContent = "";
+  $("lyr-next").textContent = "";
+}
+function showLyrics(){
+  $("lyrics").hidden = false;
+  if(!lrcTimer) lrcTimer = setInterval(syncLyricsTick, 250);
+}
+function setLyrics(lines){
+  if(fallbackActive) return; // mode cadangan: overlay lirik tidak pernah tampil
+  lrcLines = lines;
+  lrcActiveIdx = -2;
+  showLyrics();
+  syncLyricsTick();
+}
+
+function renderLyrics(idx){
+  if(idx === lrcActiveIdx) return;
+  lrcActiveIdx = idx;
+  var prev = idx > 0 ? lrcLines[idx - 1] : null;
+  var cur = idx >= 0 ? lrcLines[idx] : null;
+  var next = (idx + 1 < lrcLines.length) ? lrcLines[idx + 1] : null;
+  $("lyr-prev").textContent = prev ? prev.text : "";
+  $("lyr-active").textContent = cur ? (cur.text || "♪") : "♪";
+  $("lyr-next").textContent = next ? (next.text || "♪") : "";
+}
+
+/* Binary search: indeks baris terakhir yang timestamp-nya <= t. */
+function lrcIndexAt(t){
+  var lo = 0, hi = lrcLines.length - 1, ans = -1;
+  while(lo <= hi){
+    var mid = (lo + hi) >> 1;
+    if(lrcLines[mid].t <= t){ ans = mid; lo = mid + 1; }
+    else { hi = mid - 1; }
+  }
+  return ans;
+}
+function syncLyricsTick(){
+  if(!lrcLines.length) return;
+  if(fallbackActive) return; // mode cadangan: tidak ada akses waktu putar
+  if(!playerReady || !player || typeof player.getCurrentTime !== "function") return;
+  var t = 0;
+  try{ t = player.getCurrentTime() || 0; }catch(e){ return; }
+  renderLyrics(lrcIndexAt(t));
+}
+
+function fetchLyricsFor(item){
+  if(!item || !item.videoId) return;
+  // Request lagu ini sedang berjalan: jangan kirim request kedua dan
+  // jangan ganggu hasil yang akan datang.
+  if(lrcInFlight[item.videoId]){
+    if(lrcForId !== item.videoId){
+      lrcForId = item.videoId;
+      lrcLines = [];
+      lrcActiveIdx = -2;
+      hideLyrics();
+    }
+    return;
+  }
+  lrcForId = item.videoId;
+  lrcLines = [];
+  lrcActiveIdx = -2;
+  hideLyrics();
+  // Mode pemutar cadangan (atau API YouTube gagal total sehingga cuma
+  // cadangan yang bisa memutar): lirik nonaktif — tidak fetch sama sekali.
+  if(fallbackActive || apiState === "failed") return;
+  if(Object.prototype.hasOwnProperty.call(lrcCache, item.videoId)){
+    var cached = lrcCache[item.videoId];
+    if(cached && cached.length) setLyrics(cached);
+    return; // null di cache = sudah pernah dicari, tidak ditemukan
+  }
+  // Lagu ini sudah pernah dimintakan sesi ini (hasilnya gagal jaringan
+  // sehingga tidak ter-cache): tetap tidak minta lagi — maksimal satu
+  // request per lagu.
+  if(lrcAttempted[item.videoId]) return;
+  var q = parseLyricsQuery(item.title, item.author);
+  if(!q.track){ cacheLyrics(item.videoId, null); return; }
+  lrcAttempted[item.videoId] = true;
+  lrcInFlight[item.videoId] = true;
+  var url = "https://lrclib.net/api/get?track_name=" + encodeURIComponent(q.track);
+  if(q.artist) url += "&artist_name=" + encodeURIComponent(q.artist);
+  var ctrl = new AbortController();
+  var timer = setTimeout(function(){ ctrl.abort(); }, LRC_TIMEOUT);
+  fetch(url, { signal: ctrl.signal }).then(function(r){
+    clearTimeout(timer);
+    if(r.status === 404) return null; // LRCLIB menjawab: lagu tidak ada
+    if(!r.ok) throw new Error("HTTP " + r.status);
+    return r.json();
+  }).then(function(d){
+    lrcInFlight[item.videoId] = false;
+    if(lrcForId !== item.videoId) return; // lagu sudah berganti
+    if(fallbackActive) return; // fallback aktif belakangan: jangan tampilkan, jangan cache dari jalur ini
+    var lines = (d && d.syncedLyrics) ? parseLRC(d.syncedLyrics) : null;
+    if(lines && lines.length){
+      cacheLyrics(item.videoId, lines);
+      setLyrics(lines);
+    } else {
+      // LRCLIB menjawab tapi tidak punya lirik sinkron — cache negatif
+      // supaya lagu ini tidak dicari ulang.
+      cacheLyrics(item.videoId, null);
+    }
+  }).catch(function(){
+    // Timeout / jaringan gagal / 5xx: bukan jawaban pasti, jadi TIDAK
+    // di-cache negatif dan tidak ada error yang ditampilkan — fitur
+    // diam-diam nonaktif. Sesi ini tetap tidak minta ulang (maksimal
+    // satu request per lagu); sesi berikutnya boleh mencoba lagi.
+    lrcInFlight[item.videoId] = false;
+    clearTimeout(timer);
+  });
+}
+
 /* ================= QUEUE / FAV ACTIONS ================= */
 function addToQueue(item, silent){
   if(!item || !item.videoId) return;
@@ -930,13 +1153,40 @@ function addToQueue(item, silent){
   if(!silent) showNotice("Ditambahkan ke antrean: <strong>" + esc(item.title || "") + "</strong>", "ok");
   renderAll();
 }
+var pendingQueueUndo = null;
+var queueUndoTimer = null;
 function removeFromQueue(idx){
+  var removedItem = queue[idx];
+  if(!removedItem) return;
   var wasCurrent = (idx === currentIndex);
   queue.splice(idx, 1);
   if(idx < currentIndex) currentIndex--;
   if(wasCurrent) currentIndex = -1;
   saveJSON(LS.queue, queue);
   renderAll();
+  pendingQueueUndo = { item: removedItem, index: idx, wasCurrent: wasCurrent };
+  if(queueUndoTimer) clearTimeout(queueUndoTimer);
+  showNotice('Dihapus dari antrean: <strong>' + esc(removedItem.title || "") + '</strong> <button type="button" id="undo-queue-remove">Urungkan</button>', "warn", true);
+  var undoBtn = $("undo-queue-remove");
+  if(undoBtn) undoBtn.addEventListener("click", function(){
+    if(!pendingQueueUndo) return;
+    var undoItem = pendingQueueUndo.item;
+    var insertAt = Math.min(pendingQueueUndo.index, queue.length);
+    var wasCur = pendingQueueUndo.wasCurrent;
+    queue.splice(insertAt, 0, undoItem);
+    if(wasCur) currentIndex = insertAt;
+    else if(insertAt <= currentIndex) currentIndex++;
+    pendingQueueUndo = null;
+    if(queueUndoTimer){ clearTimeout(queueUndoTimer); queueUndoTimer = null; }
+    saveJSON(LS.queue, queue);
+    renderAll();
+    hideNotice();
+  });
+  queueUndoTimer = setTimeout(function(){
+    pendingQueueUndo = null;
+    queueUndoTimer = null;
+    hideNotice();
+  }, 10000);
 }
 function moveQueue(idx, dir){
   var target = idx + dir;
@@ -1107,6 +1357,13 @@ function switchTab(name){
 }
 
 /* ================= LAINNYA (COLLAPSIBLE) ================= */
+function expandLainnya(){
+  var section = $("lainnya");
+  if(section.classList.contains("open")) return;
+  section.classList.add("open");
+  $("lainnya-body").hidden = false;
+  $("lainnya-btn").setAttribute("aria-expanded", "true");
+}
 $("lainnya-btn").addEventListener("click", function(){
   var section = $("lainnya");
   var open = section.classList.toggle("open");
@@ -1265,12 +1522,14 @@ function doSearch(){
       return { videoId: v.videoId, title: v.title || "Tanpa judul", author: v.author || "", lengthSeconds: v.lengthSeconds || 0, thumb: v.thumb || "" };
     });
     if(lastResults.length === 0){
+      expandLainnya();
       $("results-status").textContent = "Tidak ada hasil untuk “" + q + "”. Coba kata kunci lain, atau tempel link YouTube langsung di bawah panggung.";
     } else {
       $("results-status").textContent = lastResults.length + " hasil untuk “" + q + "”. Tekan Putar untuk langsung nyanyi, atau + Antrean buat nanti.";
     }
     renderAll();
   }).catch(function(){
+    expandLainnya();
     lastResults = [];
     resultsSearched = true;
     setHealth("off", "Pencarian: offline — pakai kolom tempel link di bawah panggung");
@@ -1340,6 +1599,10 @@ function playFromLink(toQueue){
     saveJSON(LS.hist, historyList);
     updateNowUI();
     renderAll();
+    // Lirik TIDAK dicari ulang di sini walau judul asli baru ketahuan:
+    // tiap lagu maksimal satu request LRCLIB (dengan judul terbaik yang
+    // tersedia saat lagu mulai diputar), dan hasil "tidak ketemu" sudah
+    // ter-cache negatif — tidak ada retry yang menambah request.
   });
 }
 function fetchTitle(id){
@@ -1388,12 +1651,35 @@ $("now-open-yt").addEventListener("click", function(){
   if(current) window.open("https://www.youtube.com/watch?v=" + current.videoId, "_blank", "noopener");
 });
 
+var hapusCallback = null;
+function askHapus(message, onHapus){
+  $("hapus-msg").textContent = message;
+  hapusCallback = onHapus;
+  $("hapus-overlay").hidden = false;
+}
+function tutupHapus(){
+  $("hapus-overlay").hidden = true;
+  hapusCallback = null;
+}
+$("hapus-cancel").addEventListener("click", tutupHapus);
+$("hapus-yes").addEventListener("click", function(){
+  var cb = hapusCallback;
+  tutupHapus();
+  if(cb) cb();
+});
+$("hapus-overlay").addEventListener("click", function(e){
+  if(e.target === this) tutupHapus();
+});
 $("clear-queue-btn").addEventListener("click", function(){
-  queue = []; currentIndex = -1; saveJSON(LS.queue, queue); renderAll();
-  showNotice("Antrean dibersihkan. Lagu yang sedang diputar tetap jalan sampai selesai.", "ok");
+  askHapus("Hapus semua lagu di antrean? Lagu yang sedang diputar tetap jalan sampai selesai.", function(){
+    queue = []; currentIndex = -1; saveJSON(LS.queue, queue); renderAll();
+    showNotice("Antrean dibersihkan. Lagu yang sedang diputar tetap jalan sampai selesai.", "ok");
+  });
 });
 $("clear-history-btn").addEventListener("click", function(){
-  historyList = []; saveJSON(LS.hist, historyList); renderAll();
+  askHapus("Hapus semua riwayat tontonan?", function(){
+    historyList = []; saveJSON(LS.hist, historyList); renderAll();
+  });
 });
 
 /* keyboard shortcuts */
@@ -1498,6 +1784,8 @@ if(current){
   updateNowUI();
   // Siapkan rekomendasi untuk lagu terakhir yang diputar
   fetchRecommendations(current.videoId);
+  // Lirik sinkron untuk lagu terakhir juga disiapkan (dari cache bila ada)
+  fetchLyricsFor(current);
 }
 renderAll();
 checkSearchHealth();
