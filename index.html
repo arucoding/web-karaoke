@@ -8,308 +8,342 @@
 <title>Web Karaoke</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root{
     color-scheme: dark;
-    --bg:#0B0B0E;
-    --bg2:#121216;
-    --panel:#17171C;
-    --panel2:#1E1E24;
-    --line:#2A2A33;
-    --line2:#3A3A46;
-    --text:#F4F1EA;
-    --muted:#A8A29A;
-    --muted2:#7C786F;
+    --bg:#0A0A0C;
+    --surface:#17171B;
+    --surface2:#232329;
+    --ink:#F4F4F5;
+    --muted:#9C9CA6;
+    --faint:#63636E;
     --amber:#FFB020;
-    --amber-dark:#1A1405;
-    --red:#FF4D4D;
-    --red-dark:#2A0E0E;
+    --amber-ink:#1A1200;
+    --red:#FF5A5A;
     --green:#2ECC71;
-    --radius:14px;
-    --radius-sm:10px;
   }
-  *{box-sizing:border-box}
-  html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:"Plus Jakarta Sans",system-ui,-apple-system,Segoe UI,Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0}
+  body{background:var(--bg);color:var(--ink);font-family:"Plus Jakarta Sans",system-ui,-apple-system,Segoe UI,Roboto,sans-serif;font-size:15px;line-height:1.45;-webkit-font-smoothing:antialiased}
   button{font-family:inherit;cursor:pointer}
   input{font-family:inherit}
   a{color:var(--amber)}
   ::selection{background:var(--amber);color:#000}
 
-  .wrap{max-width:1440px;margin:0 auto;padding:16px 16px 40px}
-  @media(min-width:900px){.wrap{padding:20px 24px 48px}}
+  .wrap{max-width:1200px;margin:0 auto;padding:22px 20px 56px}
+  @media(min-width:1024px){.wrap{padding:28px 32px 64px}}
 
-  /* ---------- TOP / SEARCH ---------- */
-  .topbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:6px}
-  .brand{display:flex;align-items:center;gap:10px;margin-right:4px}
-  .brand-mark{width:38px;height:38px;border-radius:10px;background:var(--amber);color:#111;display:grid;place-items:center;flex:none}
-  .brand-mark svg{width:22px;height:22px}
-  .brand h1{font-size:20px;line-height:1;margin:0;font-weight:800;letter-spacing:-.02em}
-  .brand p{margin:2px 0 0;font-size:12px;color:var(--muted)}
+  /* ---------- HEADER ---------- */
+  .brand{display:flex;align-items:center;gap:9px;margin-bottom:20px}
+  .brand .mic{color:var(--amber);display:grid;place-items:center}
+  .brand .name{font-size:19px;font-weight:800;letter-spacing:-.02em}
+  .brand .name .dot{color:var(--amber)}
 
-  .searchbar{display:flex;gap:8px;flex:1 1 420px;min-width:0}
-  .searchbar .field{flex:1;display:flex;align-items:center;gap:8px;background:var(--panel);border:1.5px solid var(--line2);border-radius:12px;padding:0 6px 0 14px;min-height:52px}
-  .searchbar .field:focus-within{border-color:var(--amber)}
-  .searchbar input[type=text]{flex:1;min-width:0;background:transparent;border:0;outline:0;color:var(--text);font-size:16px;height:48px}
-  .searchbar input::placeholder{color:var(--muted2)}
-  .btn{border:1.5px solid var(--line2);background:var(--panel2);color:var(--text);border-radius:12px;font-weight:700;font-size:14px;padding:0 16px;min-height:48px;display:inline-flex;align-items:center;justify-content:center;gap:8px;white-space:nowrap}
-  .btn:active{transform:translateY(1px)}
-  .btn-primary{background:var(--amber);border-color:var(--amber);color:#171106}
-  .btn-primary:hover{background:#FFBE45}
-  .btn-ghost{background:transparent}
-  .btn-danger{color:#FF9A9A;border-color:#5A2A2A;background:var(--red-dark)}
-  .btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
+  /* ---------- LAYOUT ---------- */
+  .layout{display:flex;flex-direction:column}
+  @media(min-width:1024px){
+    .layout{display:grid;grid-template-columns:minmax(0,1fr) 392px;column-gap:44px;align-items:start}
+    .col-main{grid-column:1;grid-row:1;min-width:0}
+    .col-side{grid-column:2;grid-row:1 / span 2;position:sticky;top:28px;min-width:0}
+    .lainnya{grid-column:1;grid-row:2}
+  }
 
-  .options-row{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center;margin:10px 0 16px}
-  .switch{display:inline-flex;align-items:center;gap:9px;cursor:pointer;user-select:none;font-size:13.5px;font-weight:600;color:var(--text)}
+  /* ---------- SEARCH ---------- */
+  .searchbar{display:flex;align-items:center;gap:10px;background:var(--surface);border-radius:18px;padding:6px 6px 6px 20px;min-height:58px}
+  .searchbar svg{flex:none;color:var(--faint)}
+  .searchbar input[type=text]{flex:1;min-width:0;background:none;border:0;outline:0;color:var(--ink);font-size:16px;font-weight:500;height:46px}
+  .searchbar input::placeholder{color:var(--faint)}
+  .btn-search{flex:none;border:0;border-radius:12px;background:var(--amber);color:var(--amber-ink);font-weight:800;font-size:14.5px;padding:0 22px;height:46px}
+  .btn-search:active{filter:brightness(1.12)}
+  .btn-search:disabled{opacity:.5;cursor:not-allowed}
+
+  .options-row{display:flex;flex-wrap:wrap;gap:10px 20px;align-items:center;margin:14px 2px 22px}
+  .switch{display:inline-flex;align-items:center;gap:10px;cursor:pointer;user-select:none;font-size:13.5px;font-weight:600;color:var(--ink)}
   .switch input{position:absolute;opacity:0;width:0;height:0}
-  .switch .track{width:42px;height:24px;border-radius:999px;background:#33333D;border:1.5px solid var(--line2);position:relative;flex:none;transition:background .15s}
-  .switch .track::after{content:"";position:absolute;top:2px;left:2px;width:17px;height:17px;border-radius:50%;background:#CFCBC2;transition:left .15s,background .15s}
-  .switch input:checked + .track{background:var(--amber);border-color:var(--amber)}
-  .switch input:checked + .track::after{left:19px;background:#171106}
+  .switch .track{width:44px;height:26px;border-radius:999px;background:var(--surface2);position:relative;flex:none;transition:background .18s ease}
+  .switch .track::after{content:"";position:absolute;top:4px;left:4px;width:18px;height:18px;border-radius:50%;background:#D7D7DE;transition:transform .18s ease,background .18s ease}
+  .switch input:checked + .track{background:var(--amber)}
+  .switch input:checked + .track::after{transform:translateX(18px);background:var(--amber-ink)}
   .switch input:focus-visible + .track{outline:2px solid var(--amber);outline-offset:2px}
-  .hint{font-size:12.5px;color:var(--muted)}
-  .hint kbd{font-family:"JetBrains Mono",monospace;font-size:11px;background:var(--panel2);border:1px solid var(--line2);border-bottom-width:2px;border-radius:5px;padding:1px 6px;color:var(--text)}
-  .health{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;font-weight:700;color:var(--muted)}
-  .health .dot{width:9px;height:9px;border-radius:50%;background:#55555F;flex:none}
+  .health{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;font-weight:600;color:var(--muted)}
+  .health .dot{width:8px;height:8px;border-radius:50%;background:#55555F;flex:none}
   .health.on{color:#9BE8BC}
   .health.on .dot{background:var(--green)}
   .health.off{color:#FFB3B3}
   .health.off .dot{background:var(--red)}
 
-  /* ---------- LAYOUT ---------- */
-  .layout{display:grid;grid-template-columns:1fr;gap:16px;align-items:start}
-  @media(min-width:1020px){.layout{grid-template-columns:minmax(0,1fr) 400px}}
-
   /* ---------- STAGE ---------- */
-  .stage{background:#000;border:1.5px solid var(--line);border-radius:16px;overflow:hidden}
+  .stage{position:relative;border-radius:20px;overflow:hidden;background:#000}
   .stage-frame{position:relative;width:100%;aspect-ratio:16/9;background:#000}
-  .stage-frame iframe,.stage-frame #yt-player{position:absolute;inset:0;width:100%;height:100%;border:0}
-  .stage-empty{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center;padding:24px;color:var(--muted);background:radial-gradient(640px 300px at 50% 0%,#1C1A12 0%,#000 62%)}
-  .stage-empty .big{font-size:34px;line-height:1}
-  .stage-empty strong{color:var(--text);font-size:17px}
+  .stage-frame iframe,.stage-frame #yt-holder{position:absolute;inset:0;width:100%;height:100%;border:0}
+  .stage-frame #yt-holder iframe{position:absolute;inset:0;width:100%;height:100%}
+  .stage-empty{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center;padding:24px;color:var(--muted);background:radial-gradient(130% 150% at 18% 0%,rgba(255,176,32,.22) 0%,rgba(255,176,32,0) 55%),linear-gradient(155deg,#2B2008 0%,#171208 55%,#0C0A06 100%)}
+  .stage-empty .mic-big{color:var(--amber);display:grid;place-items:center}
+  .stage-empty strong{color:var(--ink);font-size:17px}
   .stage-empty p{margin:0;font-size:13.5px;max-width:420px;line-height:1.55}
 
-  .notice{display:none;margin:12px 0 0;padding:11px 14px;border-radius:var(--radius-sm);font-size:13.5px;line-height:1.5;font-weight:600}
+  /* ---------- SEEK ---------- */
+  .seek-row{display:flex;align-items:center;gap:12px;margin:12px 2px 0}
+  .seek-row .t{font-size:11.5px;color:var(--faint);font-weight:600;font-variant-numeric:tabular-nums;min-width:34px}
+  .seek-row .t:last-child{text-align:right}
+  .seek-row input[type=range]{flex:1}
+
+  input[type=range]{-webkit-appearance:none;appearance:none;height:4px;border-radius:999px;background:var(--surface2);outline:0;cursor:pointer;margin:0}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:18px;height:18px;border-radius:999px;background:var(--amber);border:0;cursor:pointer}
+  input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:999px;background:var(--amber);border:0;cursor:pointer}
+  input[type=range]:disabled{opacity:.35;cursor:not-allowed}
+  input[type=range]:disabled::-webkit-slider-thumb{background:var(--faint)}
+  input[type=range]:disabled::-moz-range-thumb{background:var(--faint)}
+
+  /* ---------- NOTICE ---------- */
+  .notice{display:none;margin:14px 0 0;padding:12px 16px;border-radius:14px;font-size:13.5px;line-height:1.55;font-weight:600}
   .notice.show{display:block}
-  .notice.warn{background:#2B1E07;border:1.5px solid #6B4E12;color:#FFD98A}
-  .notice.err{background:var(--red-dark);border:1.5px solid #6E2B2B;color:#FFB3B3}
-  .notice.ok{background:#0E2A1A;border:1.5px solid #1F5C39;color:#9BE8BC}
+  .notice.warn{background:#2B1E07;color:#FFD98A}
+  .notice.err{background:#2E1010;color:#FFB3B3}
+  .notice.ok{background:#0E2A1A;color:#9BE8BC}
   .notice button{margin-left:8px;text-decoration:underline;background:none;border:0;color:inherit;font-weight:800;font-size:13.5px;padding:0}
 
-  .now{padding:16px 2px 0}
-  .now-label{font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--amber);font-weight:700}
-  .now h2{margin:6px 0 4px;font-size:clamp(19px,2.4vw,26px);line-height:1.25;font-weight:800;letter-spacing:-.01em;overflow-wrap:anywhere}
-  .now .channel{color:var(--muted);font-size:14px;margin:0}
-  .now-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
-  .btn-fav.active{background:#3A2A05;border-color:var(--amber);color:var(--amber)}
+  /* ---------- NOW PLAYING ---------- */
+  .now{margin-top:20px}
+  .now h2{margin:0 0 4px;font-size:21px;font-weight:800;letter-spacing:-.01em;line-height:1.25;overflow-wrap:anywhere}
+  .now .channel{color:var(--muted);font-size:14px;font-weight:500;margin:0}
+  .now-actions{display:flex;flex-wrap:wrap;gap:6px 18px;margin-top:12px}
+  .text-btn{border:0;background:none;color:var(--muted);font-weight:700;font-size:13.5px;padding:6px 0}
+  .text-btn:hover{color:var(--ink)}
+  .text-btn:disabled{opacity:.4;cursor:not-allowed}
+  .text-btn.active{color:var(--amber)}
 
-  .controls{margin-top:16px;background:var(--panel);border:1.5px solid var(--line);border-radius:16px;padding:14px}
-  .controls-main{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-  .ctl{width:56px;height:56px;border-radius:14px;border:1.5px solid var(--line2);background:var(--panel2);color:var(--text);display:grid;place-items:center;flex:none}
-  .ctl svg{width:24px;height:24px}
-  .ctl:active{transform:translateY(1px)}
-  .ctl-play{width:68px;height:68px;border-radius:16px;background:var(--amber);border-color:var(--amber);color:#171106}
-  .ctl-play svg{width:30px;height:30px}
-  .vol{display:flex;align-items:center;gap:8px;margin-left:auto}
-  .vol label{font-size:12px;color:var(--muted);font-weight:700}
-  input[type=range]{accent-color:var(--amber);width:110px;height:28px;cursor:pointer}
-  .progress-row{display:flex;align-items:center;gap:10px;margin-top:12px}
-  .progress-row .t{font-family:"JetBrains Mono",monospace;font-size:12px;color:var(--muted);min-width:42px}
-  .progress-row .t:last-child{text-align:right}
-  .progress-row input[type=range]{flex:1;width:auto}
-  .queue-status{font-size:12.5px;color:var(--muted);margin-top:8px}
+  /* ---------- TRANSPORT ---------- */
+  .transport{display:flex;align-items:center;justify-content:center;gap:26px;margin:18px 0 6px}
+  .tbtn{appearance:none;border:0;background:none;width:52px;height:52px;border-radius:999px;display:grid;place-items:center;color:var(--ink);flex:none}
+  .tbtn:active{background:var(--surface)}
+  .tbtn svg{width:26px;height:26px}
+  .tbtn.main{width:68px;height:68px;background:var(--amber);color:var(--amber-ink)}
+  .tbtn.main:active{background:var(--amber);filter:brightness(1.12)}
+  .tbtn.main svg{width:30px;height:30px}
+  .tbtn.small{width:44px;height:44px;color:var(--muted)}
+  .tbtn.small svg{width:22px;height:22px}
 
-  .box{margin-top:16px;background:var(--panel);border:1.5px solid var(--line);border-radius:16px;padding:16px}
-  .box h3{margin:0 0 4px;font-size:15px;font-weight:800}
-  .box p.desc{margin:0 0 12px;font-size:13px;color:var(--muted);line-height:1.55}
-  .link-row{display:flex;gap:8px;flex-wrap:wrap}
-  .link-row input{flex:1 1 220px;min-width:0;background:var(--bg2);border:1.5px solid var(--line2);border-radius:12px;color:var(--text);font-size:14.5px;padding:0 14px;min-height:48px;outline:0}
-  .link-row input:focus{border-color:var(--amber)}
+  /* ---------- PUTAR OTOMATIS + STATUS ---------- */
+  .autoplay-row{display:flex;align-items:center;gap:14px;max-width:360px;margin:8px auto 14px;padding:0 2px;text-align:left}
+  .autoplay-row .meta{flex:1;min-width:0}
+  .autoplay-row .meta .t{font-weight:600;font-size:14.5px}
+  .autoplay-row .meta .s{color:var(--muted);font-size:13px;font-weight:500;margin-top:1px}
 
-  .mic-row{display:flex;flex-wrap:wrap;gap:14px 22px;align-items:center}
-  .mic-btn{display:inline-flex;align-items:center;gap:9px;border-radius:12px;border:1.5px solid var(--line2);background:var(--panel2);color:var(--text);font-weight:800;font-size:14px;padding:0 18px;min-height:50px}
-  .mic-btn .dot{width:10px;height:10px;border-radius:50%;background:#55555F;flex:none}
-  .mic-btn.on{background:var(--red-dark);border-color:var(--red);color:#FFC4C4}
-  .mic-btn.on .dot{background:var(--red);box-shadow:0 0 0 4px rgba(255,77,77,.18)}
-  .slider-group{display:flex;align-items:center;gap:8px}
-  .slider-group label{font-size:12.5px;color:var(--muted);font-weight:700;white-space:nowrap}
-  .warn-text{margin-top:12px;font-size:12.5px;line-height:1.6;color:#FFD98A;background:#241B06;border:1px solid #55420F;border-radius:var(--radius-sm);padding:10px 12px}
+  .upnext{text-align:center;font-size:13px;font-weight:500;color:var(--muted);margin:0 0 26px;display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap}
+  .upnext .k{color:var(--amber);font-weight:700}
+  .upnext .txt{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+  .skip-inline{flex:none;appearance:none;border:0;border-radius:999px;width:32px;height:32px;display:grid;place-items:center;background:var(--surface2);color:var(--ink)}
+  .skip-inline:active{filter:brightness(1.25)}
 
-  /* ---------- SIDE PANEL / TABS ---------- */
-  .panel{background:var(--panel);border:1.5px solid var(--line);border-radius:16px;overflow:hidden;display:flex;flex-direction:column;max-height:none}
-  @media(min-width:1020px){.panel{position:sticky;top:16px;max-height:calc(100vh - 32px)}}
-  .tabs{display:grid;grid-template-columns:repeat(4,1fr);border-bottom:1.5px solid var(--line);background:var(--bg2)}
-  .tab{appearance:none;border:0;background:transparent;color:var(--muted);font-weight:700;font-size:13px;padding:14px 4px 12px;border-bottom:3px solid transparent;display:flex;flex-direction:column;align-items:center;gap:2px}
-  .tab .count{font-family:"JetBrains Mono",monospace;font-size:11px;background:var(--panel2);border:1px solid var(--line2);border-radius:999px;padding:0 7px;line-height:18px;color:var(--muted)}
-  .tab.active{color:var(--text);border-bottom-color:var(--amber)}
-  .tab.active .count{color:var(--amber);border-color:#6B4E12}
-  .tab-body{overflow-y:auto;padding:12px}
-  @media(max-width:1019px){.tab-body{max-height:70vh}}
-  .tab-toolbar{display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap}
+  .autonext{display:flex;align-items:center;gap:14px;background:var(--surface);border-radius:16px;padding:12px 14px;margin:-8px 0 26px;text-align:left}
+  .autonext[hidden]{display:none}
+  .autonext img{flex:none;width:64px;height:48px;object-fit:cover;border-radius:10px;background:#000}
+  .autonext .meta{flex:1;min-width:0}
+  .auto-label{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--amber);margin-bottom:2px}
+  .autonext .meta .t{font-weight:600;font-size:14.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .autonext .meta .s{color:var(--muted);font-size:12.5px;font-weight:500;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .skip-btn{flex:none;appearance:none;border:0;border-radius:999px;width:40px;height:40px;display:grid;place-items:center;background:var(--surface2);color:var(--ink)}
+  .skip-btn:active{filter:brightness(1.25)}
+
+  /* ---------- SEGMENTED CONTROL ---------- */
+  .seg{display:grid;grid-template-columns:repeat(4,1fr);gap:2px;background:var(--surface);border-radius:999px;padding:4px;margin-bottom:20px}
+  .seg-btn{appearance:none;border:0;background:none;border-radius:999px;padding:9px 2px;color:var(--muted);font-size:13px;font-weight:700;transition:background .15s ease,color .15s ease;display:flex;align-items:center;justify-content:center;gap:5px}
+  .seg-btn .count{font-size:11px;font-weight:700;color:var(--faint);font-variant-numeric:tabular-nums}
+  .seg-btn.active{background:var(--amber);color:var(--amber-ink)}
+  .seg-btn.active .count{color:var(--amber-ink);opacity:.65}
+
+  @media(min-width:1024px){.tab-body{max-height:calc(100vh - 150px);overflow-y:auto;padding-right:4px}}
+  .tab-toolbar{display:flex;gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap}
   .tab-toolbar .spacer{flex:1}
-  .small-btn{border:1.5px solid var(--line2);background:var(--panel2);color:var(--text);border-radius:9px;font-size:12.5px;font-weight:700;padding:8px 12px;min-height:36px}
-  .small-btn.danger{color:#FF9A9A;border-color:#5A2A2A;background:var(--red-dark)}
+  .hint{font-size:12.5px;color:var(--muted)}
+  .small-btn{border:0;background:none;color:#FF9A9A;font-size:12.5px;font-weight:700;padding:8px 4px;min-height:36px}
+  .small-btn:hover{text-decoration:underline}
 
-  .status-line{font-size:13px;color:var(--muted);line-height:1.6;padding:6px 2px}
+  .status-line{font-size:13.5px;color:var(--muted);line-height:1.6;padding:2px 2px 10px}
   .status-line.err{color:#FFB3B3}
-  .spinner{width:16px;height:16px;border-radius:50%;border:2.5px solid var(--line2);border-top-color:var(--amber);display:inline-block;vertical-align:-3px;margin-right:8px;animation:spin .7s linear infinite}
+  .spinner{width:16px;height:16px;border-radius:50%;border:2.5px solid var(--surface2);border-top-color:var(--amber);display:inline-block;vertical-align:-3px;margin-right:8px;animation:spin .7s linear infinite}
   @keyframes spin{to{transform:rotate(360deg)}}
-  @media(prefers-reduced-motion:reduce){.spinner{animation:none}}
 
-  .item{display:flex;gap:11px;padding:10px;border:1.5px solid var(--line);border-radius:12px;background:var(--bg2);margin-bottom:9px;align-items:flex-start}
-  .item.playing{border-color:var(--amber);background:#1D1808}
-  .item img{width:104px;height:59px;object-fit:cover;border-radius:8px;flex:none;background:#000}
-  @media(max-width:420px){.item img{width:84px;height:48px}}
+  /* ---------- SONG ROWS ---------- */
+  .item{display:flex;gap:12px;padding:10px 6px;border-radius:14px;align-items:flex-start}
+  .item:active{background:var(--surface)}
+  .item.playing{background:var(--surface)}
+  .item.playing .item-title{color:var(--amber)}
+  .item img{width:88px;height:52px;object-fit:cover;border-radius:10px;flex:none;background:#000}
+  .qnum{flex:none;width:20px;text-align:center;font-size:13px;font-weight:700;color:var(--faint);font-variant-numeric:tabular-nums;padding-top:4px}
+  .qnum.first{color:var(--amber)}
   .item-main{flex:1;min-width:0}
-  .item-title{font-size:13.5px;font-weight:700;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere}
-  .item-meta{font-size:12px;color:var(--muted);margin-top:3px;display:flex;gap:8px;flex-wrap:wrap}
-  .item-actions{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
-  .mini{border:1.5px solid var(--line2);background:var(--panel2);color:var(--text);border-radius:8px;font-size:12px;font-weight:700;padding:6px 10px;min-height:32px;display:inline-flex;align-items:center;gap:5px}
-  .mini.primary{background:var(--amber);border-color:var(--amber);color:#171106}
-  .mini.fav-on{color:var(--amber);border-color:#6B4E12;background:#2B1E07}
-  .mini.icon-only{padding:6px 8px;min-width:44px;min-height:44px;justify-content:center}
-  .mini:disabled{opacity:.38;cursor:not-allowed}
-  .empty{border:1.5px dashed var(--line2);border-radius:12px;padding:22px 16px;text-align:center;color:var(--muted);font-size:13.5px;line-height:1.6}
-  .empty strong{color:var(--text);display:block;font-size:14.5px;margin-bottom:4px}
+  .item-title{font-size:14px;font-weight:600;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere}
+  .item-meta{font-size:12.5px;color:var(--muted);font-weight:500;margin-top:2px;display:flex;gap:8px;flex-wrap:wrap}
+  .item-actions{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;align-items:center}
+  .mini{border:0;background:var(--surface2);color:var(--ink);border-radius:999px;font-size:12.5px;font-weight:700;padding:8px 13px;min-height:34px;display:inline-flex;align-items:center;gap:5px}
+  .mini:active{filter:brightness(1.25)}
+  .mini.play-act{background:none;color:var(--amber);padding:8px 6px}
+  .mini.fav-on{color:var(--amber)}
+  .mini.icon-only{padding:0;width:44px;height:44px;min-height:44px;justify-content:center;border-radius:999px;font-size:15px}
+  .mini:disabled{opacity:.35;cursor:not-allowed}
+  .empty{padding:20px 6px;text-align:left;color:var(--muted);font-size:13.5px;line-height:1.6}
+  .empty strong{color:var(--ink);display:block;font-size:14.5px;margin-bottom:4px}
 
-  footer{margin-top:26px;font-size:12.5px;color:var(--muted2);line-height:1.7}
-  footer .keys{display:flex;flex-wrap:wrap;gap:6px 16px}
+  .auto-card{display:flex;align-items:center;gap:14px;background:var(--surface);border-radius:16px;padding:12px 14px;margin-top:4px;text-align:left}
+  .auto-card img{flex:none;width:64px;height:48px;object-fit:cover;border-radius:10px;background:#000}
+  .auto-card .meta{flex:1;min-width:0}
+  .auto-card .meta .t{font-weight:600;font-size:14.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .auto-card .meta .s{color:var(--muted);font-size:12.5px;font-weight:500;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+  /* ---------- LAINNYA ---------- */
+  .lainnya{margin-top:34px}
+  .lainnya-head{appearance:none;border:0;background:none;width:100%;display:flex;align-items:center;justify-content:space-between;padding:6px 2px;color:var(--muted);font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.14em}
+  .lainnya-head .chev{color:var(--faint);display:grid;place-items:center;transition:transform .2s ease}
+  .lainnya.open .lainnya-head .chev{transform:rotate(180deg)}
+  .lainnya-body{padding-top:8px}
+  .lainnya-body[hidden]{display:none}
+  .sec-title{font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.14em;color:var(--muted);margin:26px 2px 4px}
+  .sec-title:first-child{margin-top:6px}
+  .opt-row{display:flex;align-items:center;gap:14px;padding:10px 2px}
+  .opt-row .meta{flex:1;min-width:0}
+  .opt-row .meta .t{font-weight:600;font-size:14.5px}
+  .opt-row .meta .s{color:var(--muted);font-size:13px;font-weight:500;margin-top:1px;line-height:1.5}
+  .slider-row{padding:10px 2px 2px}
+  .slider-row .lab{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px}
+  .slider-row .lab .t{font-weight:600;font-size:14.5px}
+  .slider-row .lab .s{color:var(--muted);font-size:12.5px;font-weight:500}
+  .slider-row input[type=range]{width:100%}
+  .mic-btn{display:inline-flex;align-items:center;gap:9px;border:0;border-radius:999px;background:var(--surface2);color:var(--ink);font-weight:700;font-size:13.5px;padding:10px 18px;min-height:44px;flex:none}
+  .mic-btn .dot{width:10px;height:10px;border-radius:50%;background:#55555F;flex:none}
+  .mic-btn.on{background:#3A1414;color:#FFC4C4}
+  .mic-btn.on .dot{background:var(--red);box-shadow:0 0 0 4px rgba(255,90,90,.18)}
+  .warn-text{margin:10px 2px 0;font-size:12.5px;line-height:1.6;color:#FFD98A}
+  .warn-text strong{color:#FFE1A1}
+  .link-field{display:flex;align-items:center;gap:10px;background:var(--surface);border-radius:14px;padding:5px 5px 5px 16px;min-height:50px;margin-top:8px}
+  .link-field input{flex:1;min-width:0;background:none;border:0;outline:0;color:var(--ink);font-size:14px;font-weight:500;height:40px}
+  .link-field input::placeholder{color:var(--faint)}
+  .link-go{flex:none;border:0;border-radius:10px;background:var(--amber);color:var(--amber-ink);font-size:13px;font-weight:800;padding:9px 16px;min-height:40px}
+  .link-go.ghost{background:var(--surface2);color:var(--ink)}
+  .link-go:active{filter:brightness(1.12)}
+  .foot{margin-top:30px;font-size:12.5px;color:var(--faint);line-height:1.7}
+  .foot kbd{font-family:inherit;font-size:11px;background:var(--surface2);border-radius:5px;padding:1px 6px;color:var(--ink);font-weight:700}
+  .foot .keys{display:flex;flex-wrap:wrap;gap:6px 16px;margin-bottom:8px}
+
+  @media(prefers-reduced-motion:reduce){
+    .spinner{animation:none}
+    .lainnya-head .chev,.switch .track,.switch .track::after,.seg-btn{transition:none}
+  }
 </style>
 </head>
 <body>
 <div class="wrap">
 
-  <!-- SEARCH -->
-  <div class="topbar">
-    <div class="brand">
-      <div class="brand-mark" aria-hidden="true">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
-      </div>
-      <div>
-        <h1>Web Karaoke</h1>
-        <p>Karaoke pribadi dari YouTube</p>
-      </div>
-    </div>
-    <form class="searchbar" id="search-form">
-      <div class="field">
-        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#A8A29A" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.8-3.8"/></svg>
-        <input type="text" id="search-input" placeholder="Cari lagu… contoh: Dewa 19 Kangen" autocomplete="off" enterkeyhint="search" />
-      </div>
-      <button type="submit" class="btn btn-primary" id="search-btn">Cari</button>
-    </form>
-  </div>
-
-  <div class="options-row">
-    <label class="switch">
-      <input type="checkbox" id="karaoke-toggle" checked />
-      <span class="track" aria-hidden="true"></span>
-      <span>Otomatis tambah kata “karaoke”</span>
-    </label>
-    <span class="health" id="search-health" role="status"><span class="dot" aria-hidden="true"></span><span id="search-health-text">Pencarian: mengecek…</span></span>
-    <span class="hint">Pintasan keyboard: <kbd>Spasi</kbd> putar/jeda · <kbd>N</kbd> berikutnya · <kbd>P</kbd> sebelumnya · <kbd>M</kbd> bisu</span>
-  </div>
+  <!-- HEADER -->
+  <header class="brand">
+    <span class="mic" aria-hidden="true">
+      <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2.5" width="6" height="11" rx="3" fill="currentColor" stroke="none"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0"/><path d="M12 17.5V21"/><path d="M8.5 21h7"/></svg>
+    </span>
+    <span class="name">Web Karaoke<span class="dot">.</span></span>
+  </header>
 
   <div class="layout">
-    <!-- LEFT: STAGE -->
-    <div>
+    <!-- KIRI: UTAMA -->
+    <div class="col-main">
+      <form class="searchbar" id="search-form">
+        <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.8-3.8"/></svg>
+        <input type="text" id="search-input" placeholder="Cari lagu karaoke…" autocomplete="off" enterkeyhint="search" aria-label="Cari lagu" />
+        <button type="submit" class="btn-search" id="search-btn">Cari</button>
+      </form>
+
+      <div class="options-row">
+        <label class="switch">
+          <input type="checkbox" id="karaoke-toggle" checked />
+          <span class="track" aria-hidden="true"></span>
+          <span>Otomatis tambah kata “karaoke”</span>
+        </label>
+        <span class="health" id="search-health" role="status"><span class="dot" aria-hidden="true"></span><span id="search-health-text">Pencarian: mengecek…</span></span>
+      </div>
+
       <div class="stage">
         <div class="stage-frame">
           <div id="yt-holder"></div>
           <iframe id="fallback-frame" title="Pemutar video cadangan" style="display:none" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>
           <div class="stage-empty" id="stage-empty">
-            <div class="big" aria-hidden="true">🎤</div>
+            <span class="mic-big" aria-hidden="true">
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2.5" width="6" height="11" rx="3" fill="currentColor" stroke="none"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0"/><path d="M12 17.5V21"/><path d="M8.5 21h7"/></svg>
+            </span>
             <strong>Belum ada lagu yang diputar</strong>
-            <p>Cari lagu di atas, lalu tekan Putar. Atau tempel link YouTube di kolom bawah panggung.</p>
+            <p>Cari lagu di atas, lalu tekan Putar. Atau tempel link YouTube di bagian “Lainnya” di bawah.</p>
           </div>
         </div>
+      </div>
+
+      <div class="seek-row">
+        <span class="t" id="time-cur">0:00</span>
+        <input type="range" id="seek-slider" min="0" max="1000" value="0" aria-label="Geser posisi lagu" />
+        <span class="t" id="time-dur">0:00</span>
       </div>
 
       <div class="notice" id="notice" role="status"></div>
 
       <div class="now">
-        <div class="now-label">Sedang diputar</div>
         <h2 id="now-title">—</h2>
         <p class="channel" id="now-channel">Pilih lagu untuk mulai bernyanyi.</p>
         <div class="now-actions">
-          <button class="btn btn-fav" id="now-fav-btn" disabled>☆ Simpan ke Favorit</button>
-          <button class="btn btn-ghost" id="now-queue-btn" disabled>+ Antrean</button>
-          <button class="btn btn-ghost" id="now-open-yt" disabled>Buka di YouTube ↗</button>
+          <button class="text-btn" id="now-fav-btn" disabled>☆ Simpan ke Favorit</button>
+          <button class="text-btn" id="now-queue-btn" disabled>+ Antrean</button>
+          <button class="text-btn" id="now-open-yt" disabled>Buka di YouTube ↗</button>
         </div>
       </div>
 
-      <div class="controls" aria-label="Kontrol pemutar">
-        <div class="controls-main">
-          <button class="ctl" id="btn-prev" title="Sebelumnya (P)" aria-label="Lagu sebelumnya">
-            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 5h2v14H6zM20 5v14L9.5 12z"/></svg>
-          </button>
-          <button class="ctl ctl-play" id="btn-play" title="Putar / Jeda (Spasi)" aria-label="Putar atau jeda">
-            <svg id="icon-play" viewBox="0 0 24 24" fill="currentColor"><path d="M7 4.5v15l13-7.5z"/></svg>
-            <svg id="icon-pause" viewBox="0 0 24 24" fill="currentColor" style="display:none"><path d="M6 4h4v16H6zM14 4h4v16h-4z"/></svg>
-          </button>
-          <button class="ctl" id="btn-next" title="Berikutnya (N)" aria-label="Lagu berikutnya">
-            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 5h2v14h-2zM4 5v14l10.5-7z"/></svg>
-          </button>
-          <button class="ctl" id="btn-mute" title="Bisu (M)" aria-label="Bisu atau bunyikan">
-            <svg id="icon-vol" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H3v6h3l5 4z" fill="currentColor" stroke="none"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.4 5.6a9 9 0 0 1 0 12.8"/></svg>
-            <svg id="icon-mute" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M11 5 6 9H3v6h3l5 4z" fill="currentColor" stroke="none"/><path d="m16 9 6 6M22 9l-6 6"/></svg>
-          </button>
-          <div class="vol">
-            <label for="vol-slider">Volume</label>
-            <input type="range" id="vol-slider" min="0" max="100" value="80" />
-          </div>
-        </div>
-        <div class="progress-row">
-          <span class="t" id="time-cur">0:00</span>
-          <input type="range" id="seek-slider" min="0" max="1000" value="0" aria-label="Geser posisi lagu" />
-          <span class="t" id="time-dur">0:00</span>
-        </div>
-        <div class="queue-status" id="queue-status">Antrean kosong.</div>
+      <div class="transport" aria-label="Kontrol pemutar">
+        <button class="tbtn" id="btn-prev" title="Sebelumnya (P)" aria-label="Lagu sebelumnya">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 5.3v13.4c0 .9-1 1.5-1.8 1L8.5 13a1.2 1.2 0 0 1 0-2l8.7-6.7c.8-.5 1.8.1 1.8 1Z"/><rect x="4.4" y="4" width="2.6" height="16" rx="1.3"/></svg>
+        </button>
+        <button class="tbtn main" id="btn-play" title="Putar / Jeda (Spasi)" aria-label="Putar atau jeda">
+          <svg id="icon-play" viewBox="0 0 24 24" fill="currentColor"><path d="M8 4.9v14.2c0 .9 1 1.5 1.8 1L20.5 13a1.2 1.2 0 0 0 0-2L9.8 3.9A1.2 1.2 0 0 0 8 4.9Z"/></svg>
+          <svg id="icon-pause" viewBox="0 0 24 24" fill="currentColor" style="display:none"><rect x="5" y="4" width="5" height="16" rx="1.4"/><rect x="14" y="4" width="5" height="16" rx="1.4"/></svg>
+        </button>
+        <button class="tbtn" id="btn-next" title="Berikutnya (N)" aria-label="Lagu berikutnya">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M5 5.3v13.4c0 .9 1 1.5 1.8 1l8.7-6.7a1.2 1.2 0 0 0 0-2L6.8 4.3A1.2 1.2 0 0 0 5 5.3Z"/><rect x="17" y="4" width="2.6" height="16" rx="1.3"/></svg>
+        </button>
+        <button class="tbtn small" id="btn-mute" title="Bisu (M)" aria-label="Bisu atau bunyikan">
+          <svg id="icon-vol" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H3v6h3l5 4z" fill="currentColor" stroke="none"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.4 5.6a9 9 0 0 1 0 12.8"/></svg>
+          <svg id="icon-mute" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M11 5 6 9H3v6h3l5 4z" fill="currentColor" stroke="none"/><path d="m16 9 6 6M22 9l-6 6"/></svg>
+        </button>
       </div>
 
-      <div class="box">
-        <h3>Putar dari link YouTube</h3>
-        <p class="desc">Tempel link video atau ID video (11 karakter) kalau pencarian lagi bermasalah, atau lagunya sudah kamu tahu.</p>
-        <form class="link-row" id="link-form">
-          <input type="text" id="link-input" placeholder="https://www.youtube.com/watch?v=… atau dQw4w9WgXcQ" autocomplete="off" />
-          <button type="submit" class="btn btn-primary">Putar</button>
-          <button type="button" class="btn" id="link-queue-btn">+ Antrean</button>
-        </form>
+      <div class="autoplay-row">
+        <div class="meta">
+          <div class="t">Putar otomatis</div>
+          <div class="s">Lanjut ke rekomendasi YouTube saat antrean kosong</div>
+        </div>
+        <label class="switch">
+          <input type="checkbox" id="autoplay-toggle" checked />
+          <span class="track" aria-hidden="true"></span>
+        </label>
       </div>
 
-      <div class="box">
-        <h3>Mikrofon + gema (reverb)</h3>
-        <p class="desc">Suaramu dari mic dicampur gema ringan lalu keluar ke speaker/headset, barengan sama musik. Mati secara bawaan — nyalakan hanya saat mau nyanyi.</p>
-        <div class="mic-row">
-          <button class="mic-btn" id="mic-btn" aria-pressed="false"><span class="dot"></span><span id="mic-btn-label">Mic mati — nyalakan</span></button>
-          <div class="slider-group">
-            <label for="mic-vol">Volume mic</label>
-            <input type="range" id="mic-vol" min="0" max="150" value="90" />
-          </div>
-          <div class="slider-group">
-            <label for="mic-reverb">Gema</label>
-            <input type="range" id="mic-reverb" min="0" max="100" value="35" />
-          </div>
-        </div>
-        <div class="warn-text">⚠️ <strong>Waspada feedback:</strong> kalau mic dekat speaker, suara bisa berputar jadi denging/teriakan keras. Pakai headset lebih aman, atau jauhkan mic dari speaker dan kecilkan volume mic dulu sebelum menaikkan perlahan. Fitur mic butuh koneksi HTTPS dan izin mikrofon dari browser.</div>
-        <div class="notice" id="mic-notice" role="status"></div>
-      </div>
+      <p class="upnext" id="queue-status">Antrean kosong.</p>
 
-      <footer>
-        <div class="keys">
-          <span>Pencarian lagu memakai backend GAS (Innertube, tanpa kunci API) sebagai jalur utama — kalau backend bermasalah, otomatis dicoba server publik Invidious sebagai cadangan.</span>
+      <div class="autonext" id="autonext-row" hidden>
+        <img id="autonext-img" alt="" />
+        <div class="meta">
+          <div class="auto-label">Diputar otomatis berikutnya</div>
+          <div class="t" id="autonext-title">—</div>
+          <div class="s" id="autonext-sub"></div>
         </div>
-        <div style="margin-top:6px">Favorit, riwayat, dan antrean tersimpan di browser perangkat ini saja.</div>
-      </footer>
+        <button class="skip-btn" id="autonext-skip" type="button" aria-label="Lewati rekomendasi ini">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M5 5.3v13.4c0 .9 1 1.5 1.8 1l8.7-6.7a1.2 1.2 0 0 0 0-2L6.8 4.3A1.2 1.2 0 0 0 5 5.3Z"/><rect x="17" y="4" width="2.6" height="16" rx="1.3"/></svg>
+        </button>
+      </div>
     </div>
 
-    <!-- RIGHT: PANEL -->
-    <aside class="panel" aria-label="Panel lagu">
-      <div class="tabs" role="tablist">
-        <button class="tab active" data-tab="results" role="tab">Hasil Cari<span class="count" id="count-results">0</span></button>
-        <button class="tab" data-tab="queue" role="tab">Antrean<span class="count" id="count-queue">0</span></button>
-        <button class="tab" data-tab="favs" role="tab">Favorit<span class="count" id="count-favs">0</span></button>
-        <button class="tab" data-tab="history" role="tab">Riwayat<span class="count" id="count-history">0</span></button>
+    <!-- KANAN: DAFTAR LAGU -->
+    <aside class="col-side" aria-label="Daftar lagu">
+      <div class="seg" role="tablist" aria-label="Daftar lagu">
+        <button class="seg-btn tab active" data-tab="results" role="tab">Hasil<span class="count" id="count-results">0</span></button>
+        <button class="seg-btn tab" data-tab="queue" role="tab">Antrean<span class="count" id="count-queue">0</span></button>
+        <button class="seg-btn tab" data-tab="favs" role="tab">Favorit<span class="count" id="count-favs">0</span></button>
+        <button class="seg-btn tab" data-tab="history" role="tab">Riwayat<span class="count" id="count-history">0</span></button>
       </div>
       <div class="tab-body">
         <div id="pane-results">
@@ -320,7 +354,7 @@
           <div class="tab-toolbar">
             <span class="hint" id="queue-hint">Lagu berikutnya main otomatis.</span>
             <span class="spacer"></span>
-            <button class="small-btn danger" id="clear-queue-btn">Bersihkan antrean</button>
+            <button class="small-btn" id="clear-queue-btn">Bersihkan antrean</button>
           </div>
           <div id="queue-list"></div>
         </div>
@@ -331,12 +365,81 @@
           <div class="tab-toolbar">
             <span class="hint">Lagu yang pernah diputar di perangkat ini.</span>
             <span class="spacer"></span>
-            <button class="small-btn danger" id="clear-history-btn">Hapus riwayat</button>
+            <button class="small-btn" id="clear-history-btn">Hapus riwayat</button>
           </div>
           <div id="history-list"></div>
         </div>
       </div>
     </aside>
+
+    <!-- LAINNYA -->
+    <section class="lainnya" id="lainnya">
+      <button class="lainnya-head" id="lainnya-btn" type="button" aria-expanded="false" aria-controls="lainnya-body">
+        <span>Lainnya</span>
+        <span class="chev" aria-hidden="true">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+        </span>
+      </button>
+      <div class="lainnya-body" id="lainnya-body" hidden>
+
+        <h3 class="sec-title">Mikrofon + gema</h3>
+        <div class="opt-row">
+          <div class="meta">
+            <div class="t">Mikrofon</div>
+            <div class="s">Suaramu dari mic dicampur gema ringan lalu keluar ke speaker/headset, barengan sama musik. Mati secara bawaan — nyalakan hanya saat mau nyanyi.</div>
+          </div>
+          <button class="mic-btn" id="mic-btn" aria-pressed="false"><span class="dot"></span><span id="mic-btn-label">Mic mati — nyalakan</span></button>
+        </div>
+        <div class="slider-row">
+          <div class="lab"><span class="t">Volume mic</span><span class="s">0–150</span></div>
+          <input type="range" id="mic-vol" min="0" max="150" value="90" aria-label="Volume mic" />
+        </div>
+        <div class="slider-row">
+          <div class="lab"><span class="t">Gema (reverb)</span><span class="s">Kering — ruang besar</span></div>
+          <input type="range" id="mic-reverb" min="0" max="100" value="35" aria-label="Gema mic" />
+        </div>
+        <p class="warn-text">⚠️ <strong>Waspada feedback:</strong> kalau mic dekat speaker, suara bisa berputar jadi denging/teriakan keras. Pakai headset lebih aman, atau jauhkan mic dari speaker dan kecilkan volume mic dulu sebelum menaikkan perlahan. Fitur mic butuh koneksi HTTPS dan izin mikrofon dari browser.</p>
+        <div class="notice" id="mic-notice" role="status"></div>
+
+        <h3 class="sec-title">Volume pemutar</h3>
+        <div class="slider-row">
+          <div class="lab"><span class="t">Volume video</span><span class="s">0–100</span></div>
+          <input type="range" id="vol-slider" min="0" max="100" value="80" aria-label="Volume video" />
+        </div>
+
+        <h3 class="sec-title">Putar dari link YouTube</h3>
+        <div class="opt-row">
+          <div class="meta">
+            <div class="s" style="margin-top:0">Tempel link video atau ID video (11 karakter) kalau pencarian lagi bermasalah, atau lagunya sudah kamu tahu.</div>
+          </div>
+        </div>
+        <form class="link-field" id="link-form">
+          <input type="text" id="link-input" placeholder="youtube.com/watch?v=… atau dQw4w9WgXcQ" autocomplete="off" aria-label="Link atau ID video YouTube" />
+          <button type="button" class="link-go ghost" id="link-queue-btn">+ Antrean</button>
+          <button type="submit" class="link-go">Putar</button>
+        </form>
+
+        <h3 class="sec-title">Pencarian</h3>
+        <div class="opt-row">
+          <div class="meta">
+            <div class="t">Otomatis tambah kata “karaoke”</div>
+            <div class="s">Kata “karaoke” ditambahkan ke pencarian kalau belum ada.</div>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="karaoke-toggle-2" checked />
+            <span class="track" aria-hidden="true"></span>
+          </label>
+        </div>
+
+        <footer class="foot">
+          <div class="keys">
+            <span>Pintasan keyboard: <kbd>Spasi</kbd> putar/jeda · <kbd>N</kbd> berikutnya · <kbd>P</kbd> sebelumnya · <kbd>M</kbd> bisu</span>
+          </div>
+          <div>Pencarian lagu memakai backend GAS (Innertube, tanpa kunci API) sebagai jalur utama — kalau backend bermasalah, otomatis dicoba server publik Invidious sebagai cadangan.</div>
+          <div style="margin-top:6px">Favorit, riwayat, dan antrean tersimpan di browser perangkat ini saja.</div>
+        </footer>
+      </div>
+    </section>
   </div>
 </div>
 
@@ -345,7 +448,7 @@
 "use strict";
 
 /* ================= DATA & STORAGE ================= */
-var LS = { favs:"wk_favs_v1", hist:"wk_hist_v1", queue:"wk_queue_v1", current:"wk_current_v1", karaoke:"wk_karaoke_toggle_v1" };
+var LS = { favs:"wk_favs_v1", hist:"wk_hist_v1", queue:"wk_queue_v1", current:"wk_current_v1", karaoke:"wk_karaoke_toggle_v1", autoplay:"wk_autoplay_v1" };
 function loadJSON(key, fallback){
   try{ var v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; }catch(e){ return fallback; }
 }
@@ -360,6 +463,7 @@ var currentIndex = -1; // index inside queue, -1 = playing outside queue
 if(current){
   currentIndex = queue.findIndex(function(q){ return q.videoId === current.videoId; });
 }
+var autoplayOn = loadJSON(LS.autoplay, true) !== false; // default ON
 
 /* ================= HELPERS ================= */
 function $(id){ return document.getElementById(id); }
@@ -514,6 +618,8 @@ function playVideo(item, queueIndex){
   renderAll();
   $("stage-empty").style.display = "none";
   hideNotice();
+  // Siapkan rekomendasi putar-otomatis di latar belakang selagi lagu jalan
+  fetchRecommendations(item.videoId);
   if(playerReady && player){
     stopFallback();
     player.loadVideoById(item.videoId);
@@ -539,12 +645,21 @@ function playVideo(item, queueIndex){
 
 function playNext(fromEnded){
   if(queue.length === 0){
+    if(autoplayOn && currentRec()){
+      playVideo(currentRec(), -1);
+      return;
+    }
     if(fromEnded) showNotice("Antrean habis. Cari lagu berikutnya yuk.", "ok");
     return;
   }
   var next = currentIndex + 1;
   if(next >= queue.length){
-    if(fromEnded){ showNotice("Antrean selesai — semua lagu sudah diputar.", "ok"); return; }
+    if(fromEnded){
+      // Antrean selesai: lanjut ke rekomendasi kalau putar otomatis nyala
+      if(autoplayOn && currentRec()){ playVideo(currentRec(), -1); return; }
+      showNotice("Antrean selesai — semua lagu sudah diputar.", "ok");
+      return;
+    }
     next = 0;
   }
   playVideo(queue[next], next);
@@ -566,7 +681,7 @@ function addToHistory(item){
 function updateNowUI(){
   if(current){
     $("now-title").textContent = current.title;
-    $("now-channel").textContent = current.author ? ("Channel: " + current.author) : "Diputar dari link langsung.";
+    $("now-channel").textContent = current.author ? current.author : "Diputar dari link langsung.";
     $("now-fav-btn").disabled = false;
     $("now-queue-btn").disabled = false;
     $("now-open-yt").disabled = false;
@@ -584,14 +699,119 @@ function syncNowFavBtn(){
     btn.classList.remove("active");
   }
 }
+
+/* Lagu antrean yang akan main setelah lagu sekarang (null kalau tidak ada). */
+function queueNextItem(){
+  if(queue.length === 0) return null;
+  if(currentIndex >= 0){
+    return (currentIndex + 1 < queue.length) ? queue[currentIndex + 1] : null;
+  }
+  return queue[0];
+}
+
+var SKIP_SVG = '<svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M5 5.3v13.4c0 .9 1 1.5 1.8 1l8.7-6.7a1.2 1.2 0 0 0 0-2L6.8 4.3A1.2 1.2 0 0 0 5 5.3Z"/><rect x="17" y="4" width="2.6" height="16" rx="1.3"/></svg>';
+
 function updateQueueStatus(){
   var el = $("queue-status");
-  if(queue.length === 0){ el.textContent = "Antrean kosong."; return; }
-  if(currentIndex >= 0){
-    el.textContent = "Antrean: lagu ke-" + (currentIndex + 1) + " dari " + queue.length + ". Berikutnya main otomatis setelah lagu selesai.";
+  var nextItem = queueNextItem();
+  var rec = currentRec();
+  if(nextItem){
+    var rest = 0;
+    if(currentIndex >= 0) rest = queue.length - (currentIndex + 2);
+    el.innerHTML = '<span class="k">Berikutnya:</span> <span class="txt">' + esc(nextItem.title || "") + (rest > 0 ? " · " + rest + " lagi" : "") + "</span>";
+  } else if(autoplayOn && rec){
+    el.innerHTML = '<span class="k">Berikutnya otomatis:</span> <span class="txt">' + esc(rec.title || "") + '</span><button type="button" class="skip-inline" id="status-skip" aria-label="Lewati rekomendasi ini">' + SKIP_SVG + "</button>";
+    var sb = $("status-skip");
+    if(sb) sb.addEventListener("click", skipRecommendation);
+  } else if(autoplayOn && current){
+    el.textContent = "Berikutnya otomatis: menyiapkan rekomendasi…";
   } else {
-    el.textContent = "Antrean berisi " + queue.length + " lagu.";
+    el.textContent = "Antrean kosong.";
   }
+  updateAutoNextRow();
+}
+
+function updateAutoNextRow(){
+  var row = $("autonext-row");
+  var rec = currentRec();
+  var show = autoplayOn && !!rec && !queueNextItem();
+  row.hidden = !show;
+  if(show){
+    $("autonext-img").src = rec.thumb ? rec.thumb : thumb(rec.videoId);
+    $("autonext-title").textContent = rec.title || "Tanpa judul";
+    var sub = rec.author || "";
+    if(rec.lengthSeconds) sub += (sub ? " · " : "") + fmtDur(rec.lengthSeconds);
+    $("autonext-sub").textContent = sub;
+  }
+}
+
+/* ================= PUTAR OTOMATIS (REKOMENDASI) ================= */
+var recList = [];   // rekomendasi untuk video yang sedang diputar
+var recIndex = 0;
+var recForId = null;
+
+function currentRec(){
+  if(!recList.length) return null;
+  return recList[recIndex % recList.length];
+}
+function skipRecommendation(){
+  if(recList.length < 2) return;
+  recIndex = (recIndex + 1) % recList.length;
+  updateQueueStatus();
+  renderAll();
+}
+
+/* Ambil video terkait dari Invidious (field recommendedVideos) di latar
+   belakang selagi lagu diputar. Kalau gagal/kosong, cadangan acak dari
+   Favorit lalu Riwayat. */
+function fetchRecommendations(id){
+  if(!id) return;
+  recList = []; recIndex = 0; recForId = id;
+  updateQueueStatus();
+  tryInstances("/api/v1/videos/" + encodeURIComponent(id), SEARCH_TIMEOUT,
+    function(d){ return !!(d && Array.isArray(d.recommendedVideos)); }, null)
+    .then(function(d){
+      if(recForId !== id) return;
+      var list = [];
+      (d.recommendedVideos || []).forEach(function(v){
+        if(!v || !v.videoId || v.videoId === id) return;
+        var t = "";
+        if(Array.isArray(v.videoThumbnails) && v.videoThumbnails.length){
+          var med = v.videoThumbnails.filter(function(x){ return x.quality === "medium"; })[0] || v.videoThumbnails[0];
+          t = med.url || "";
+        }
+        list.push({ videoId: v.videoId, title: v.title || "Tanpa judul", author: v.author || "", lengthSeconds: v.lengthSeconds || 0, thumb: t });
+      });
+      if(list.length){ recList = list; recIndex = 0; }
+      else buildFallbackRecs(id);
+      updateQueueStatus();
+      renderAll();
+    })
+    .catch(function(){
+      if(recForId !== id) return;
+      buildFallbackRecs(id);
+      updateQueueStatus();
+      renderAll();
+    });
+}
+function shuffled(arr){
+  var a = arr.slice();
+  for(var i = a.length - 1; i > 0; i--){
+    var j = Math.floor(Math.random() * (i + 1));
+    var tmp = a[i]; a[i] = a[j]; a[j] = tmp;
+  }
+  return a;
+}
+function buildFallbackRecs(excludeId){
+  var seen = {};
+  var pool = [];
+  shuffled(favorites).concat(shuffled(historyList)).forEach(function(v){
+    if(!v || !v.videoId || v.videoId === excludeId || seen[v.videoId]) return;
+    seen[v.videoId] = true;
+    pool.push({ videoId: v.videoId, title: v.title || "Tanpa judul", author: v.author || "", lengthSeconds: v.lengthSeconds || 0, thumb: v.thumb || "" });
+  });
+  recList = pool;
+  recIndex = 0;
 }
 
 /* ================= QUEUE / FAV ACTIONS ================= */
@@ -645,12 +865,15 @@ function itemHTML(item, opts){
   if(opts.extraMeta) meta += opts.extraMeta;
   var h = "";
   h += '<div class="item' + (opts.playing ? " playing" : "") + '">';
+  if(typeof opts.queueNum === "number"){
+    h += '<div class="qnum' + (opts.queueNum === 0 ? " first" : "") + '">' + (opts.queueNum + 1) + "</div>";
+  }
   h += '<img src="' + esc(item.thumb ? item.thumb : thumb(item.videoId)) + '" alt="" loading="lazy" onerror="this.style.visibility=\'hidden\'">';
   h += '<div class="item-main">';
   h += '<div class="item-title">' + esc(item.title || "Tanpa judul") + "</div>";
   if(meta) h += '<div class="item-meta">' + meta + "</div>";
   h += '<div class="item-actions">';
-  h += '<button class="mini primary" data-act="play">▶ Putar</button>';
+  h += '<button class="mini play-act" data-act="play">▶ Putar</button>';
   if(!opts.hideQueue) h += '<button class="mini" data-act="queue">+ Antrean</button>';
   h += '<button class="mini' + (fav ? " fav-on" : "") + '" data-act="fav">' + (fav ? "★ Favorit" : "☆ Favorit") + "</button>";
   if(opts.queueControls){
@@ -668,6 +891,8 @@ function bindList(container, list, optsFor){
   if(container.dataset.bound) return;
   container.dataset.bound = "1";
   container.addEventListener("click", function(e){
+    var skipBtn = e.target.closest("button[data-autoskip]");
+    if(skipBtn){ skipRecommendation(); return; }
     var btn = e.target.closest("button[data-act]");
     if(!btn) return;
     var itemEl = btn.closest(".item");
@@ -710,6 +935,26 @@ function renderList(containerId, list, emptyHTML, optsFn){
   container.innerHTML = h;
 }
 
+function queueEmptyHTML(){
+  var rec = currentRec();
+  if(autoplayOn && rec){
+    var sub = rec.author || "";
+    if(rec.lengthSeconds) sub += (sub ? " · " : "") + fmtDur(rec.lengthSeconds);
+    return '<div class="auto-card">'
+      + '<img src="' + esc(rec.thumb ? rec.thumb : thumb(rec.videoId)) + '" alt="" loading="lazy" onerror="this.style.visibility=\'hidden\'">'
+      + '<div class="meta"><div class="auto-label">Diputar otomatis berikutnya</div>'
+      + '<div class="t">' + esc(rec.title || "Tanpa judul") + "</div>"
+      + (sub ? '<div class="s">' + esc(sub) + "</div>" : "")
+      + "</div>"
+      + '<button type="button" class="skip-btn" data-autoskip="1" aria-label="Lewati rekomendasi ini">' + SKIP_SVG.replace('width="17" height="17"', 'width="20" height="20"') + "</button>"
+      + "</div>";
+  }
+  if(autoplayOn){
+    return '<div class="empty"><strong>Antrean kosong</strong>Putar otomatis nyala — lagu berikutnya diambil dari rekomendasi. Atau tambahkan lagu dari hasil cari, favorit, atau riwayat.</div>';
+  }
+  return '<div class="empty"><strong>Antrean kosong</strong>Tambahkan lagu dari hasil cari, favorit, atau riwayat — lagu berikutnya akan main otomatis.</div>';
+}
+
 var lastResults = [];
 var resultsSearched = false; // true once a search has completed (even with 0 hits)
 function renderAll(){
@@ -724,9 +969,8 @@ function renderAll(){
       : '<div class="empty"><strong>Belum ada hasil</strong>Cari lagu dulu lewat kolom pencarian di atas.</div>',
     function(item){ return {}; });
 
-  renderList("queue-list", queue,
-    '<div class="empty"><strong>Antrean kosong</strong>Tambahkan lagu dari hasil cari, favorit, atau riwayat — lagu berikutnya akan main otomatis.</div>',
-    function(item, i){ return { queueControls: true, hideQueue: true, playing: current && i === currentIndex, isFirst: i === 0, isLast: i === queue.length - 1 }; });
+  renderList("queue-list", queue, queueEmptyHTML(),
+    function(item, i){ return { queueControls: true, hideQueue: true, queueNum: i, playing: current && i === currentIndex, isFirst: i === 0, isLast: i === queue.length - 1 }; });
 
   renderList("favs-list", favorites,
     '<div class="empty"><strong>Belum ada favorit</strong>Tekan ☆ Favorit di lagu mana pun buat menyimpannya di sini.</div>',
@@ -754,6 +998,15 @@ function switchTab(name){
   var tab = document.querySelector('.tab[data-tab="' + name + '"]');
   if(tab) tab.click();
 }
+
+/* ================= LAINNYA (COLLAPSIBLE) ================= */
+$("lainnya-btn").addEventListener("click", function(){
+  var section = $("lainnya");
+  var open = section.classList.toggle("open");
+  $("lainnya-body").hidden = !open;
+  this.setAttribute("aria-expanded", open ? "true" : "false");
+});
+$("autonext-skip").addEventListener("click", skipRecommendation);
 
 /* ================= SEARCH (GAS PRIMARY + INVIDIOUS FALLBACK) ================= */
 var GAS_BASE = "https://script.google.com/macros/s/AKfycbx3JVzh18-BIkKqsv55Op35iS-WKPLh4L6ocJg-XHMZzlUA2SjDoM_m7YjJCHGobKKz/exec";
@@ -875,7 +1128,7 @@ function doSearch(){
   switchTab("results");
   // Di HP panel hasil ada jauh di bawah panggung — gulir ke sana supaya
   // proses cari (dan hasilnya) terlihat, bukan terkesan macet.
-  if(window.innerWidth < 1020){
+  if(window.innerWidth < 1024){
     var reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     setTimeout(function(){
       $("pane-results").scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "start" });
@@ -932,10 +1185,24 @@ function doSearch(){
 }
 $("search-form").addEventListener("submit", function(e){ e.preventDefault(); doSearch(); });
 
-// karaoke toggle persistence
-var savedToggle = loadJSON(LS.karaoke, true);
-$("karaoke-toggle").checked = savedToggle !== false;
-$("karaoke-toggle").addEventListener("change", function(){ saveJSON(LS.karaoke, $("karaoke-toggle").checked); });
+// karaoke toggle persistence (dua switch tersinkron: dekat search + di Lainnya)
+function setKaraokeToggle(val, persist){
+  $("karaoke-toggle").checked = !!val;
+  $("karaoke-toggle-2").checked = !!val;
+  if(persist) saveJSON(LS.karaoke, !!val);
+}
+setKaraokeToggle(loadJSON(LS.karaoke, true) !== false, false);
+$("karaoke-toggle").addEventListener("change", function(){ setKaraokeToggle(this.checked, true); });
+$("karaoke-toggle-2").addEventListener("change", function(){ setKaraokeToggle(this.checked, true); });
+
+// autoplay toggle persistence
+$("autoplay-toggle").checked = autoplayOn;
+$("autoplay-toggle").addEventListener("change", function(){
+  autoplayOn = this.checked;
+  saveJSON(LS.autoplay, autoplayOn);
+  if(autoplayOn && current && recForId !== current.videoId) fetchRecommendations(current.videoId);
+  renderAll();
+});
 
 /* ================= MANUAL LINK ================= */
 function playFromLink(toQueue){
@@ -1122,6 +1389,8 @@ if(current){
   $("now-title").textContent = current.title;
   $("stage-empty").style.display = "none";
   updateNowUI();
+  // Siapkan rekomendasi untuk lagu terakhir yang diputar
+  fetchRecommendations(current.videoId);
 }
 renderAll();
 checkSearchHealth();
